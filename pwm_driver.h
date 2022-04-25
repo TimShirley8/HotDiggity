@@ -1,3 +1,6 @@
+// (c) Meta Platforms, Inc. and affiliates. Confidential and proprietary.
+// Author: Tim Shirley
+
 #ifndef pwm_driver_h
 #define pwm_driver_h
 

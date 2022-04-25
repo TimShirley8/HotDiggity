@@ -1,3 +1,6 @@
+// (c) Meta Platforms, Inc. and affiliates. Confidential and proprietary.
+// Author: Tim Shirley
+
 #ifndef hd_serial_h
 #define hd_serial_h
 #include <Arduino.h>

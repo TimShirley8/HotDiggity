@@ -1,3 +1,6 @@
+// (c) Meta Platforms, Inc. and affiliates. Confidential and proprietary.
+// Author: Tim Shirley
+
 #ifndef hot_diggity_h
 #define hot_diggity_h
 #include <Arduino.h>

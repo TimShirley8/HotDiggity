@@ -1,3 +1,6 @@
+// (c) Meta Platforms, Inc. and affiliates. Confidential and proprietary.
+// Author: Tim Shirley
+
 #include "pwm_driver.h"
 
 pwm_driver::pwm_driver(void){

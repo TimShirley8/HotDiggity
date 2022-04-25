@@ -1,3 +1,6 @@
+// (c) Meta Platforms, Inc. and affiliates. Confidential and proprietary.
+// Author: Tim Shirley
+
 #ifndef PCAL6408A_h
 #define PCAL6408A_h
 #include <Arduino.h>

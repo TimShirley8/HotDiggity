@@ -1,3 +1,6 @@
+// (c) Meta Platforms, Inc. and affiliates. Confidential and proprietary.
+// Author: Tim Shirley
+
 #include "PCAL6408A.h"
 
 PCAL6408A::PCAL6408A(){}

@@ -1,3 +1,6 @@
+// (c) Meta Platforms, Inc. and affiliates. Confidential and proprietary.
+// Author: Tim Shirley
+
 #include "cmd_parser.h"
 #include "hot_diggity.h"
 #include "hd_serial.h"

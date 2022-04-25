@@ -1,3 +1,6 @@
+// (c) Meta Platforms, Inc. and affiliates. Confidential and proprietary.
+// Author: Tim Shirley
+
 #ifndef cmd_parser_h
 #define cmd_parser_h
 #include <Arduino.h>

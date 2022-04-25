@@ -1,3 +1,6 @@
+// (c) Meta Platforms, Inc. and affiliates. Confidential and proprietary.
+// Author: Tim Shirley
+
 #include <Arduino.h>
 #include <Wire.h>   // gives us the I2C library
 #include "hot_diggity.h"
