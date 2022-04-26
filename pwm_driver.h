@@ -60,7 +60,7 @@ namespace pwm_reg{
 
 // PWM base register bitmasks
 #define PWM_MSB_ON      0x10  // applied to the ON high byte
-#define PWM_MSB_OFF     0x10  // a[[;oed tp tje PFF jogj byte (off takes precedence)
+#define PWM_MSB_OFF     0x10  // applied to the OFF high byte (off takes precedence)
 
 // prescale value calc stuff
 #define PWM_INT_CLK         25000000.0
@@ -73,6 +73,13 @@ namespace pwm_reg{
 // some error codes
 #define PWM_VAL_ERROR       10001
 
+namespace pwm_out_types{
+	enum pwm_out_type_vals : bool {
+		pwm_out_open_drain = false,
+		pwm_out_totem_pole = true
+	};
+}
+
 class pwm_driver {
 public:
   pwm_driver();
@@ -82,10 +89,10 @@ public:
   void sleep();
   void wakeup();
   void setPwmFreq(float freq);
-  void setOutputMode(bool out_mode);
+  void setOutputMode(pwm_out_types::pwm_out_type_vals out_mode);
   uint16_t getPwm(uint8_t pwm_num);
   void setPwm(uint8_t pwm_num, uint16_t tc_on, uint16_t tc_off);
-  void setPin(uint8_t num, uint16_t pin_val, bool invert = false);
+  void setPwmOut(uint8_t num, uint16_t pin_val, bool invert = false);
 
 private:
   uint8_t   _prescale_val;

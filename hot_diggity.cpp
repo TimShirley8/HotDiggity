@@ -27,7 +27,7 @@ bool hot_diggity::begin(){
 	// setup PWM for output
 	_pwm.reset();
 	delay(250);
-	_pwm.setOutputMode(PWM_OUT_TOTEM_P);
+	_pwm.setOutputMode(pwm_out_types::pwm_out_totem_pole);
 	_pwm.setPwmFreq(1000.0);
 	// initialize the htr power values
 	for(int i = (int)pwm_info::pwm_left1; i <= (int)pwm_info::pwm_right2; i++){
@@ -132,7 +132,7 @@ void hot_diggity::setHeaterPower(pwm_info::pwm_sel htr_num, uint16_t power_mw){
 	// else set the heater
 	_htr_pwr[htr_num] = power_mw;
 	uint16_t set_to = power_mw * 4;	// power goes in 250uW steps
-	_pwm.setPin(htr_num, set_to, false);
+	_pwm.setPwmOut(htr_num, set_to, false);
 }
 
 uint16_t hot_diggity::getHeaterPower(pwm_info::pwm_sel htr_num){
@@ -182,9 +182,9 @@ String hot_diggity::getBoardInfo(){
 
 void hot_diggity::setRgbValue(uint8_t red, uint8_t grn, uint8_t blu){
 	// take the 8 bit vals, and write them as 12 bit values
-	_pwm.setPin(pwm_info::pwm_red, ((uint16_t)red) << 4, false);
-	_pwm.setPin(pwm_info::pwm_grn, ((uint16_t)grn) << 4, false);
-	_pwm.setPin(pwm_info::pwm_blu, ((uint16_t)blu) << 4, false);
+	_pwm.setPwmOut(pwm_info::pwm_red, ((uint16_t)red) << 4, false);
+	_pwm.setPwmOut(pwm_info::pwm_grn, ((uint16_t)grn) << 4, false);
+	_pwm.setPwmOut(pwm_info::pwm_blu, ((uint16_t)blu) << 4, false);
 }
 #pragma endregion
 
