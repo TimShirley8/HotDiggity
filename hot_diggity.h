@@ -22,7 +22,7 @@ namespace pwm_info{
 	enum pwm_sel : uint8_t{
 		pwm_left1 = 0,
 		pwm_left2,
-		pwm_flex2,
+		pwm_flex2,	// pinout changes for ckt routing
 		pwm_flex4,
 		pwm_flex5,
 		pwm_flex3,
