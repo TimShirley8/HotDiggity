@@ -7,6 +7,10 @@
 hot_diggity::hot_diggity(){
 }
 
+/// @brief initializes/begins the port expander, the pwm chip, and the temp
+///			sensors for the hot diggity system.  Also gets the board information
+///			from the expander and stores it for retrieval later.
+/// @returns true if all devices are found on their proper i2c bus, else false
 bool hot_diggity::begin(){
 	bool device_begin_ok = true;
 	bool all_device_begin_ok = true;

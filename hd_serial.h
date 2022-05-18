@@ -6,7 +6,7 @@
 #include <Arduino.h>
 
 /// @class hd_serial
-/// @brief uses the selected Serial io for comm
+/// @brief uses the selected Serial/USB io for comm
 class hd_serial{
 public:
     enum ports : byte{

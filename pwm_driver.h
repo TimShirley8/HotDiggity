@@ -28,35 +28,29 @@ namespace pwm_reg{
 		prescale = 		0xFE,
 		test_mode = 	0xFF
 	};
+	enum mode1_bits : uint8_t {
+		mode1_restart = 0x80,
+		mode1_extclk = 0x40,
+		mode1_auto_inc = 0x20,
+		mode1_sleep = 0x10,
+		mode1_sub1 = 0x08,
+		mode1_sub2 = 0x04,
+		mode1_sub3 = 0x02,
+		mode1_allcall = 0x01
+	};
+	enum mode2_bits : uint8_t {
+		mode2__ro = 0xE0,
+		mode2_invert = 0x10,
+		mode2_out_ch = 0x08,
+		mode2_outdrive = 0x04,
+		mode2_dis_hiZ = 0x02,
+		mode2_dis_sel = 0x01
+	};
+
+	const uint8_t next_reg_inc = 4;
+	const uint8_t pwm_min_num = 0;
+	const uint8_t pwm_max_max = 15;
 }
-
-
-// for PWMs 0 thru 15 "math"
-// mult PWM base by PWM# (0-15) and add to base reg
-#define PWM_NEXT_REG_INC  4
-#define PWM_NUM_MIN       0
-#define PWM_NUM_MAX       15
-
-// MODE1 register bit masks
-#define PWM_MODE1_RESTART   0x80
-#define PWM_MODE1_EXTCLK    0x40
-#define PWM_MODE1_AUTO_INC  0x20
-#define PWM_MODE1_SLEEP     0x10
-#define PWM_MODE1_SUB1      0x08
-#define PWM_MODE1_SUB2      0x04
-#define PWM_MODE1_SUB3      0x02
-#define PWM_MODE1_ALLCALL   0x01
-
-// MODE2 register bit masks
-#define PWM_MODE2_RO        0xE0
-#define PWM_MODE2_INVERT    0x10
-#define PWM_MODE2_OUT_CH    0x08
-#define PWM_MODE2_OUTDRV    0x04  // OD (0), totem pole (1)
-#define PWM_MODE2_DIS_HIZ   0x02  // this bit is dominant over lower one
-#define PWM_MODE2_DIS_SEL   0x01  // low (0) vs. OUTDRV (1) (OD = hi-z, tp = high)
-
-#define PWM_OUT_TOTEM_P     true
-#define PWM_OUT_OPEN_D      false
 
 // PWM base register bitmasks
 #define PWM_MSB_ON      0x10  // applied to the ON high byte

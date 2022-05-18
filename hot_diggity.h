@@ -22,11 +22,11 @@ namespace pwm_info{
 	enum pwm_sel : uint8_t{
 		pwm_left1 = 0,
 		pwm_left2,
-		pwm_flex1,
 		pwm_flex2,
-		pwm_flex3,
 		pwm_flex4,
 		pwm_flex5,
+		pwm_flex3,
+		pwm_flex1,
 		pwm_right1,
 		pwm_right2,
 		pwm_nc1,

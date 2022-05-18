@@ -42,14 +42,14 @@ bool pwm_driver::init(const uint8_t addr, TwoWire &i2c)
 /// @brief resets the chip (and gets it ready to run...).  MUSB be called for PWM
 ///         chip to work properly
 void pwm_driver::reset(){
-  i2c_write8(pwm_reg::mode1, PWM_MODE1_RESTART);
+  i2c_write8(pwm_reg::mode1, pwm_reg::mode1_restart);
   delay(10);
 }
 
 /// @brief puts the pwm chip into sleep mode (lower power)
 void pwm_driver::sleep(){
   uint8_t tmp = i2c_read8(pwm_reg::mode1);
-  uint8_t to_sleep = tmp | PWM_MODE1_SLEEP; // set sleep bit
+  uint8_t to_sleep = tmp | pwm_reg::mode1_sleep; // set sleep bit
   i2c_write8(pwm_reg::mode1, to_sleep);
   delay(5);  // wait till counter ticks over for sleep active
 }
@@ -57,7 +57,7 @@ void pwm_driver::sleep(){
 /// @brief wakes the pwm chip from sleep
 void pwm_driver::wakeup(){
   uint8_t tmp = i2c_read8(pwm_reg::mode1);
-  uint8_t to_wake = tmp & ~PWM_MODE1_SLEEP; // clr sleep bit
+  uint8_t to_wake = tmp & ~pwm_reg::mode1_sleep; // clr sleep bit
   i2c_write8(pwm_reg::mode1, to_wake);
   delay(5);  // wait till counter ticks over for sleep active
 }
@@ -77,14 +77,14 @@ void pwm_driver::setPwmFreq(float freq){
 
   // have to put the device to sleep to change prescalar
   uint8_t temp = i2c_read8(pwm_reg::mode1); // store current val
-  uint8_t set_to = (temp & ~PWM_MODE1_RESTART) | PWM_MODE1_SLEEP;
+  uint8_t set_to = (temp & ~pwm_reg::mode1_restart) | pwm_reg::mode1_sleep;
   i2c_write8(pwm_reg::mode1, set_to);
   i2c_write8(pwm_reg::prescale, _prescale_val);
   i2c_write8(pwm_reg::mode1, temp);
   // give it a break to process the request
   delay(5);
   // turn it back on and use auto_inc
-  set_to = temp | PWM_MODE1_RESTART | PWM_MODE1_AUTO_INC;
+  set_to = temp | pwm_reg::mode1_restart | pwm_reg::mode1_auto_inc;
   i2c_write8(pwm_reg::mode1, set_to);
 }
 
@@ -93,7 +93,7 @@ void pwm_driver::setPwmFreq(float freq){
 void pwm_driver::setOutputMode(pwm_out_types::pwm_out_type_vals out_mode){
   uint8_t tmp = i2c_read8(pwm_reg::mode2);
   uint8_t set_to_mode;
-  set_to_mode = ((bool)out_mode) ? (tmp | PWM_MODE2_OUTDRV) : (tmp & ~PWM_MODE2_OUTDRV);
+  set_to_mode = ((bool)out_mode) ? (tmp | pwm_reg::mode2_outdrive) : (tmp & ~pwm_reg::mode2_outdrive);
   i2c_write8(pwm_reg::mode2, set_to_mode);
 }
 
@@ -103,7 +103,7 @@ void pwm_driver::setOutputMode(pwm_out_types::pwm_out_type_vals out_mode){
 /// @returns value of active time (0-4095)
 uint16_t pwm_driver::getPwm(uint8_t pwm_num){
   // calc address to proper PWM base address)
-  int start_reg = pwm_reg::on_lsb + (PWM_NEXT_REG_INC * pwm_num);
+  int start_reg = pwm_reg::on_lsb + (pwm_reg::next_reg_inc * pwm_num);
   // ask for 3 bytes (ON_LSB, ON_MSB, OFF_LSB, OFF_MSB)
   int to_read = _i2c->requestFrom((int)_i2c_addr, start_reg, (int)4);
   uint16_t pwm_on_val = 0;
@@ -138,7 +138,7 @@ uint16_t pwm_driver::getPwm(uint8_t pwm_num){
 /// @param tc_off the clock count that the pwm turns off
 void pwm_driver::setPwm(uint8_t pwm_num, uint16_t tc_on, uint16_t tc_off){
   _i2c->beginTransmission(_i2c_addr);
-  uint8_t start_reg = pwm_reg::on_lsb + (PWM_NEXT_REG_INC * pwm_num);
+  uint8_t start_reg = pwm_reg::on_lsb + (pwm_reg::next_reg_inc * pwm_num);
   _i2c->write(start_reg);
   _i2c->write((uint8_t)(tc_on & 0xFF));
   _i2c->write((uint8_t)(tc_on >> 8));
