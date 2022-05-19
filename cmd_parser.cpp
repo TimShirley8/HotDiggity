@@ -5,22 +5,27 @@
 #include "hot_diggity.h"
 #include "hd_serial.h"
 
+/// @brief empty constructor
 cmd_parser::cmd_parser(){
     // do nothing
 }
 
-
+/// @brief establishes connection to the hot_diggity instance
+/// @param pointer to the hot_diggity instance
+/// @returns true (ideally it would return meaningful status)
 bool cmd_parser::begin(hot_diggity &hd)
 {
     _hd = &hd;
     return true;
 }
 
-/// resets the cmd parser (actually does nothing)
+/// @brief resets the cmd parser (actually does nothing)
 void cmd_parser::reset(){
     // do some sort of reset thing here
 }
 
+/// @brief parses serial commands and executes them
+/// @param cmd_str command string to be parsed
 void cmd_parser::parseCmd(String cmd_str){
     bool cmd_found = false;
     // trim white space and make all caps
@@ -85,6 +90,8 @@ void cmd_parser::parseCmd(String cmd_str){
     }
 }
 
+/// @brief will use the command string to set the heater power level
+/// @param cmd_str string containing the heater number and value to set heater to
 void cmd_parser::parse_run_set_heater(String cmd_str){
     // strip command and parse the rest
     String tmp = strip_cmd_str(cmd_str);
@@ -100,6 +107,8 @@ void cmd_parser::parse_run_set_heater(String cmd_str){
     _hd->setHeaterPower((pwm_info::pwm_sel)htr_num, heat);
 }
 
+/// @brief will use the command string to return (via serial) the heater power level
+/// @param cmd_str string containing heater number to get power level of
 void cmd_parser::parse_run_get_heater(String cmd_str){
     String msg = "";
     // strip command and parse the rest
@@ -115,6 +124,8 @@ void cmd_parser::parse_run_get_heater(String cmd_str){
     }
 }
 
+/// @brief will use the command string to return (via serial) the temperature from a sensor
+/// @param cmd_str command string that contains the temp sensor number to get temp from
 void cmd_parser::parse_run_get_temp(String cmd_str){
     String msg = "";
     // strip command and parse the rest
@@ -127,11 +138,13 @@ void cmd_parser::parse_run_get_temp(String cmd_str){
     _hd->hds.println(msg);
 }
 
+/// @brief will return (via serial) the board id information and a bizarre message
 void cmd_parser::parse_run_get_board(){
     _hd->hds.println(_hd->getBoardInfo());
     _hd->hds.println("chicken pot pie?");
 }
 
+/// @brief when there is a fw version this will return (via serial) the fw version
 void cmd_parser::parse_run_get_fw(){
     String msg = "";
     // *** TODO
@@ -139,10 +152,13 @@ void cmd_parser::parse_run_get_fw(){
     _hd->hds.println(msg);
 }
 
+/// @brief will toggle led3 (3V3 led on port expander) state
 void cmd_parser::parse_run_toggle_led3(){
     _hd->toggleExLed();
 }
 
+/// @brief will set led3 to the state requested via the command string
+/// @param cmd_str string containg the commadn and ON/OFF to set the led
 void cmd_parser::parse_run_set_led3(String cmd_str){
     String msg = "";
     // strip command and parse the rest
@@ -161,6 +177,8 @@ void cmd_parser::parse_run_set_led3(String cmd_str){
     _hd->hds.println(msg);
 }
 
+/// @brief will set the rgb led (on v_htr) to the command string specified 24b (R, G, B) value
+/// @param cmd_str string with 8bit R, G, and B values (space seperator)
 void cmd_parser::parse_run_set_rgb(String cmd_str){
     String msg = "";
     String tmp = strip_cmd_str(cmd_str);
@@ -176,18 +194,25 @@ void cmd_parser::parse_run_set_rgb(String cmd_str){
     _hd->hds.println(msg);
 }
 
+/// @brief will set the polling interval for temp sensors
+/// @param cmd_str string containing the desired polling rate in msec
 void cmd_parser::parse_run_set_poll(String cmd_str){
     String tmp = strip_cmd_str(cmd_str);
     String rate_str = get_next_arg(tmp, 0);
     _hd->setPollRate((uint16_t)rate_str.toInt());
 }
 
+/// @brief will set the polling state for temp sensors
+/// @param cmd_str string containing the designed state ON or OFF
 void cmd_parser::parse_run_poll_state(String cmd_str){
     String tmp = strip_cmd_str(cmd_str);
     String action_str = get_next_arg(tmp, 0);
     _hd->setPollingState(action_str);
 }
 
+/// @brief helper function to remove the command bit of the command string
+/// @param cmd_str string to have the command removed from
+/// @returns string with just the parameters
 String cmd_parser::strip_cmd_str(String in_str){
     int start = 0;
     int found = in_str.indexOf(" ");
@@ -195,6 +220,10 @@ String cmd_parser::strip_cmd_str(String in_str){
     return in_str.substring(found+1, end);
 }
 
+/// @brief helper function to get the next argument in the command string
+/// @param in_str the string we wish to get an argument from
+/// @param start offset in the string to parse from
+/// @returns the string containing the next argument (from start)
 String cmd_parser::get_next_arg(String in_str, int start){
     int found = in_str.indexOf(" ", start);
     int total = in_str.length();
@@ -205,6 +234,11 @@ String cmd_parser::get_next_arg(String in_str, int start){
     return(in_str.substring(start, found));
 }
 
+/// @brief helper function to get the next in the command string
+/// @param in_str the string we wish to get an argument from
+/// @param start offset in the string to parse from
+/// @param found_at [out] pointer to int; returns the location of the seperator
+/// @returns the string containing the next argument (from start)
 String cmd_parser::get_next_arg(String in_str, int start, int *found_at){
     int found = in_str.indexOf(" ", start);
     int total = in_str.length();
