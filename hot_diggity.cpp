@@ -4,6 +4,8 @@
 #include "hot_diggity.h"
 
 //-------------------------- INIT stuff ---------------------------
+
+/// @brief creates an instance of hot_diggity
 hot_diggity::hot_diggity(){
 }
 
@@ -88,25 +90,36 @@ bool hot_diggity::begin(){
 
 #pragma region port_expander
 // ------------------------ Port Expander Functions -------------
+
+/// @brief will get the board id number (read only once during hot_diggity::begin)
+/// @returns the stored board id.
 uint8_t hot_diggity::getBoardId(){
 	return _board_id;
 }
+
+/// @brief will get the board revision number (read only once during hot_diggity::begin)
+/// @returns the stored board revision.
 uint8_t hot_diggity::getBoardRev(){
 	return _board_rev;
 }
 
+/// @brief sets the LED on the port expander to desired state
+/// @param turn_on false = off, true = on
 void hot_diggity::setExLed(bool turn_on){
 	uint8_t val = _p_exp.readExPort();
 	val = (turn_on) ? (val & ~P_EX_LED) : (val | P_EX_LED);
 	_p_exp.writeExPort(val);
 }
 
+/// @brief toggles the LED on teh port expander
 void hot_diggity::toggleExLed(){
 	uint8_t val = _p_exp.readExPort();
 	val ^= P_EX_LED;			// toggle the current state of the LED
 	_p_exp.writeExPort(val);
 }
 
+/// @brief enables or disables the pwm outputs
+/// @param turn_on true = enabled pwm outputs, false = disable pwm outputs
 void hot_diggity::setPwmOutEn(bool turn_on){
 	uint8_t val = _p_exp.readExPort();
 	val = (turn_on) ? (val & ~P_EX_PWM_EN) : (val | P_EX_PWM_EN);
@@ -116,6 +129,9 @@ void hot_diggity::setPwmOutEn(bool turn_on){
 
 #pragma region heater_fx
 // ----------------------- Heater funtions -------------------
+/// @brief sets a selected heater's power level in mW
+/// @param htr_num heater to set power level of (use pwm_info::pwm_sel enumeration)
+/// @param power_mw integer value in milli-watts for heater power
 void hot_diggity::setHeaterPower(pwm_info::pwm_sel htr_num, uint16_t power_mw){
 	// see if there is enough power to grant the request
 	int budget = getTotalHeaterPwr();
@@ -139,6 +155,9 @@ void hot_diggity::setHeaterPower(pwm_info::pwm_sel htr_num, uint16_t power_mw){
 	_pwm.setPwmOut(htr_num, set_to, false);
 }
 
+/// @brief gives us the value that the heater is current set to (in mW)
+/// @param htr_num heater to set power level of (use pwm_info::pwm_sel enumeration)
+/// @returns heater setting in milli-watts
 uint16_t hot_diggity::getHeaterPower(pwm_info::pwm_sel htr_num){
 	uint16_t val = _pwm.getPwm(htr_num);
 	if(val == PWM_VAL_ERROR){
@@ -150,6 +169,8 @@ uint16_t hot_diggity::getHeaterPower(pwm_info::pwm_sel htr_num){
 	return val;
 }
 
+/// @brief function to give us the sum of power in the heaters
+/// @returns total heater power in milli-watts
 uint16_t hot_diggity::getTotalHeaterPwr(){
 	uint16_t tot_power = 0;
 	for(int i = (int)pwm_info::pwm_left1; i <= (int)pwm_info::pwm_right2; i++){
@@ -161,10 +182,17 @@ uint16_t hot_diggity::getTotalHeaterPwr(){
 
 #pragma region temp_sense
 // --------------------- Temp Sense functions -----------------
+/// @brief provides the temperature of a given sensor
+/// @param temp_num number of the temperature sensor to read (use the tsense_info::tsense enumeration)
+/// @returns floating point value of the temperature at the requested sensor in Celsius
 float hot_diggity::getTemperature(tsense_info::tsense temp_num){
 	return _temp_sense[temp_num].readTempC();
 }
 
+/// @brief provides the tmperature of a given sensor and passes back the relative time
+/// @param temp_num number of the temperature sensor to read (use the tsense_info::tsense enumeration)
+/// @param temp_time pointer to a location to put the current timestamp (millis())
+/// @returns floating point value of the temperature at the requested sensor in Celsius
 float hot_diggity::getTemperature(tsense_info::tsense temp_num, ulong *temp_time){
 	float tval;
 	tval = _temp_sense[temp_num].readTempC();
@@ -176,14 +204,20 @@ float hot_diggity::getTemperature(tsense_info::tsense temp_num, ulong *temp_time
 
 #pragma region board_intfc
 // --------------------- Interface funcitons -------------------
+/// @brief will get the current board and revision infomration and send it back as a string
+/// @returns a string with board id and board revision
 String hot_diggity::getBoardInfo(){
-	// for debug re-read the ID
+	// for debug re-read the ID *** TODO *** remove geT_board_info() when hw is working
 	get_board_info();
 	String msg = "Board ID: " + String(getBoardId());
 	msg += ", Board Rev: " + String(getBoardRev());
 	return msg;
 }
 
+/// @brief sets an RGB value of the LEDs on V_HTR
+/// @param red 8-bit red level
+/// @param grn 8-bit green level
+/// @param blu 8-bit blue level
 void hot_diggity::setRgbValue(uint8_t red, uint8_t grn, uint8_t blu){
 	// take the 8 bit vals, and write them as 12 bit values
 	_pwm.setPwmOut(pwm_info::pwm_red, ((uint16_t)red) << 4, false);
@@ -193,14 +227,20 @@ void hot_diggity::setRgbValue(uint8_t red, uint8_t grn, uint8_t blu){
 #pragma endregion
 
 #pragma region temp_polling
+/// @brief sets the polling rate for the temp sensors (in msec)
+/// @param rate number of milli-seconds between reading sensors
 void hot_diggity::setPollRate(uint16_t rate){
 	_poll_rate = rate;
 }
 
+/// @brief gets the polling rate for the temp sesnors (in msec)
+/// @returns rate value; polling interval (in milli-seconds)
 uint16_t hot_diggity::getPollRate(){
 	return _poll_rate;
 }
 
+/// @brief turns periodic temperature polling on or off
+/// @param state "ON" turns on temperature polling, anything else ("OFF") - stops temp polling
 void hot_diggity::setPollingState(String state){
 	if(state == "ON") {
 		_poll_active = true;
@@ -209,15 +249,22 @@ void hot_diggity::setPollingState(String state){
 	else {_poll_active = false;}
 }
 
+/// @brief returns the polling state as "ON" or "OFF"
+/// @returns polling state as "ON" or "OFF"
 String hot_diggity::getPollingState(){
 	String ret_val = (_poll_active) ? "ON" : "OFF";
 	return ret_val;
 }
 
+/// @brief returns the internal flag for whether or not we are polling
+/// @returns boolean value false for "OFF", true for "ON"
 bool hot_diggity::getPollingStateBool(){
 	return _poll_active;
 }
 
+/// @brief when temperature polling is active, will determine if the specified
+///			interval has elapsed, if so, it will get new readings and print them to the
+///			hd serial interface
 void hot_diggity::checkPoll(){
 	if(_poll_active){
 		// use time and see if it is time to get/send a new report
@@ -248,6 +295,8 @@ void hot_diggity::checkPoll(){
 
 #pragma region private_stuff
 //---------------- Private ------------------------------------
+/// @brief function to read board information from port expander and store them
+///		in the private instance variables _board_rev, and _board_id
 void hot_diggity::get_board_info(){
 	{
 		uint8_t brd = _p_exp.readExPort();

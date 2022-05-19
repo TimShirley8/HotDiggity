@@ -9,19 +9,19 @@ hd_serial::hd_serial(){
 }
 
 /// @brief Constructor that assigns the port for comms
-/// @param [in] port to send stuff to, select from ports enum
+/// @param [in] connect_to a port to send stuff to, select from ports enum
 hd_serial::hd_serial(ports connect_to)
     : _use_port(connect_to)
 {}
 
 /// @brief with current hd_serial, assigns port to use
-/// @param [in] port to send stuff to, select from ports enum
+/// @param [in] connect_to port to send stuff to, select from ports enum
 bool hd_serial::begin(ports connect_to){
     _use_port = connect_to;
 }
 
 /// @brief same as println for Serial/SerialUSB
-/// @param [in] String to print
+/// @param [in] to_print string to print
 /// @returns number of bytes sent to port
 size_t hd_serial::println(String to_print){
     size_t out_num = 0;

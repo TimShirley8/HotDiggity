@@ -173,6 +173,9 @@ void pwm_driver::setPwmOut(uint8_t num, uint16_t pin_val, bool invert){
   }
 }
 
+/// @brief helper function to get 1 byte from the i2c register
+/// @param reg register that we want to read from
+/// @returns 8-bit data from the i2c read operation
 uint8_t pwm_driver::i2c_read8(uint8_t reg){
   _i2c->beginTransmission(_i2c_addr);
   _i2c->write(reg);
@@ -182,6 +185,9 @@ uint8_t pwm_driver::i2c_read8(uint8_t reg){
   return _i2c->read();
 }
 
+/// @brief helper function to write a byte to an i2c register
+/// @param reg register that we want to write to
+/// @param value the value we wish to write to the register
 void pwm_driver::i2c_write8(uint8_t reg, uint8_t value){
   _i2c->beginTransmission(_i2c_addr);
   _i2c->write(reg);
