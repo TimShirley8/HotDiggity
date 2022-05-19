@@ -6,20 +6,40 @@
 #include <Arduino.h>
 #include "Wire.h"
 
-// all registers are by pin (each bit selects or deselects)
-// except the output configure (PCAL6408A_CFG)
-#define PCAL6408A_INPORT  0x00
-#define PCAL6408A_OUTPORT 0x01
-#define PCAL6408A_INVERT  0x02    // 0 = normal, 1 = invert
-#define PCAL6408A_CONFIG  0x03    // 1 = hi-z in, 0 = out
-#define PCAL6408A_OUTDS1  0x40    // drive strength pins 0-3
-#define PCAL6408A_OUTDS2  0x41    // drive strength pins 4-7
-#define PCAL6408A_LATCH   0x42
-#define PCAL6408A_PUPD_EN 0x43    // disable pu/pd = 0, enable = 1
-#define PCAL6408A_PUPD_SEL  0x44  // 1 = pu, 0 = pd
-#define PCAL6408A_IRQ_MASK  0x45  // 1 = irq, 0 = masked
-#define PCAL6408A_IRQ_STAT  0x46
-#define PCAL6408A_OUTP_CFG  0x4F  // lsb: 1 = OD, 0 = push-pull
+namespace pcal_reg{
+  // registers for the PCAL6408A
+  // all registers are by pin (each bit selects or deselects)
+  // except the output configure (oupt_cfg)
+  const uint8_t inport = 0x00;      /// ro - register to read from
+  const uint8_t outport = 0x01;     /// rw - register to write to (can be read - only reflects output register)
+  const uint8_t invert = 0x02;      /// rw - allows inversion of individual pins (0 = normal, 1 = invert)
+  const uint8_t config = 0x03;      /// rw - sets as input (hi-z) - 1, or output - 0
+  const uint8_t drv_str1 = 0x40;    /// rw - drive strength register for pins 0-3
+  const uint8_t drv_str2 = 0x41;    /// rw - drive strength register for pins 4-7
+  const uint8_t latch = 0x42;       /// rw - inp interrupt latching (0 = not latched, 1 = latch input, read clears)
+  const uint8_t pupd_en = 0x43;     /// rw - enables (1), or disables (0) pull-up/pull-down
+  const uint8_t pupd_sel = 0x44;    /// rw - turns pull-up or pull-down on (1), or off (0)
+  const uint8_t irq_mask = 0x45;    /// rw - 1 = interrupt active, 0 = interrupt masked
+  const uint8_t irq_status = 0x46;  /// ro - 1 = interrupt active, 0 = not source of interrupt
+  const uint8_t outp_cfg = 0x4F;    /// rw - global setting for outputs as push-pull or open-drain
+};
+
+namespace pcal_drv_str{
+  // drive strength settings (2 bits per pin)
+  const uint8_t ds_2p5ma = 0;   /// set for 2.5mA drive strength
+  const uint8_t ds_5p0ma = 1;   /// set for 5.0mA drive strength
+  const uint8_t ds_7p5ma = 2;   /// set for 7.5mA drive strength
+  const uint8_t ds_10ma = 3;    /// set for 10 mA drive strength
+  // shift values for each pin
+  const uint8_t shft0 = 0;
+  const uint8_t shft1 = 2;
+  const uint8_t shft2 = 4;
+  const uint8_t shft3 = 6;
+  const uint8_t shft4 = 0;
+  const uint8_t shft5 = 2;
+  const uint8_t shft6 = 4;
+  const uint8_t shft7 = 6;
+};
 
 class PCAL6408A{
 public:
