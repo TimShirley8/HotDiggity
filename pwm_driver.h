@@ -95,7 +95,7 @@ private:
   TwoWire   *_i2c;
 
   uint8_t i2c_read8(uint8_t reg);
-  void i2c_write8(uint8_t reg, uint8_t value);
+  uint8_t i2c_write8(uint8_t reg, uint8_t value);
 };
 
 #endif

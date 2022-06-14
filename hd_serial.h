@@ -18,6 +18,7 @@ public:
     bool begin(ports connect_to);
     size_t println(String to_print);
     String readString(void);
+    int read(void);
     int available(void);
 private:
     ports _use_port;

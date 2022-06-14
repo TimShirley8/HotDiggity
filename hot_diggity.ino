@@ -13,7 +13,9 @@ void setup() {
   bool device_init_ok = true;
   // put your setup code here, to run once:
   Wire.begin();         // I2C0
+  Wire.setClock(400000);
   Wire1.begin();        // I2C1
+  Wire1.setClock(400000);
   Serial.begin(115200);  // serial for I/O
   SerialUSB.begin(2000000); // serial for fast I/O
   while(!SerialUSB);        // wait for it to enumerate
@@ -36,20 +38,67 @@ void setup() {
 }
 
 void loop() {
+  String tot_cmd = "";
   hd.checkPoll();
   // look for serial input
-  if(hd.hds.available() > 0){
-    String cmd_str = hd.hds.readString();
-    if (cmd_str.length() > 0){
-      // output response to serial input
-      unsigned long hd_time = millis();
-      cp.parseCmd(cmd_str);
-      cmd_str = "";
-      hd.hds.println("at time: " + String(hd_time));
+  if(hd.inputMachine()){
+    String cmd = hd.getCommand();
+    if(cmd.length() > 0){
+      // hd.hds.println("[" + cmd + "]");
+      cp.parseCmd(cmd);
     }
   }
-  cp.reset();
+  /*
+  if(hd.hds.available() > 0){
+    String ser_str = hd.hds.readString();
+    tot_cmd += ser_str;
+    // now see if the string is terminated with cr/lf
+    // if(tot_cmd.endsWith("\r\n") || tot_cmd.endsWith("\n\r")){
+      // output response to serial input
+      unsigned long hd_time = millis();
+      cp.parseCmd(tot_cmd);
+      tot_cmd = "";
+      hd.hds.println("at time: " + String(hd_time));
+    // }
+  }
+  */
+  // cp.reset();
 }
+
+#if 0
+/// @brief will read the serial port until it sees CR, LF
+///       it will append all new chars to tot_cmd until CR, LF
+/// @returns whether or not a CR, LF is found
+String getSerialInput(void){
+  static String the_cmd = "";
+  static bool new_cmd = true;
+  if(hd.hds.available() > 0){
+    String ser_str = hd.hds.readString();
+    the_cmd += ser_str;
+    if ((the_cmd.endsWith('\n')) || (the_cmd.endsWith('\r'))){
+      return the_cmd;
+    }
+  }
+  return "";
+}
+
+String getSerialChars(void){
+  static String baked_cmd = "";
+  static bool start_cmd = true;
+  if(hd.hds.available() > 0){
+    int val = hd.hds.read();
+    if(val >= 0){
+      if(start_cmd && (val == '\n' || val == '\r')){
+        // just toss this (extra \n or \r char)
+      } else {
+        start_cmd = false;
+        baked_cmd += String((char)val);
+      }
+    }
+  }
+
+}
+#endif
 
 /* =================================================================================
    *** TODO list *****

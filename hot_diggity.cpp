@@ -16,6 +16,16 @@ hot_diggity::hot_diggity(){
 bool hot_diggity::begin(){
 	bool device_begin_ok = true;
 	bool all_device_begin_ok = true;
+
+	_cmd_str = "";
+	_input_machine_state = in_mach::idle;
+
+	// sw reset all devices on i2c bus 0
+	// Wire.beginTransmission(0x00);
+	// Wire.write(0x06);
+	// Wire.endTransmission();
+	// delayMicroseconds(500);
+
 	// run all the ::begin sort of stuff
 	_p_exp.connect(i2c_addrs::PCAL6408A_addr, Wire);
 	if(_p_exp.begin() != true) device_begin_ok = false;
@@ -24,15 +34,38 @@ bool hot_diggity::begin(){
 		device_begin_ok = true;			// reset for next device
 		all_device_begin_ok = false;
 	}
+
+	// setup the port_expander
+	// write to the port first before turning outputs on
+	// write to the port for enable PWM and LED off
+  	_p_exp.writeExPort(P_EX_LED);
+	// set port pins up
+	{
+		uint8_t ins = P_EX_BRD_ID_MASK | P_EX_BRD_REV_MASK;
+		// (inv/norm, in/out, dr_str1,2, en/dis pupd, pu/pd, od/pushpull)
+  		_p_exp.setupExPort(0x00, ins, 0x00, 0xF0, ins, ins, 0);
+	}
+
+	if(_pwm.init(i2c_addrs::PCA9685_addr, Wire) != true) device_begin_ok = false;
+	if(!device_begin_ok){
+		// ignore first failure... seems to have to try (get unknown error back)
+		// hds.println("failed to init pwm");
+		// device_begin_ok = true;			// reset for next device
+		// all_device_begin_ok = false;
+	}
+	// now reset the pwm chip
+	_pwm.reset();
+	delay(250);
+
+	// setup PWM for output
+	// try reinitializing after reset....
 	if(_pwm.init(i2c_addrs::PCA9685_addr, Wire) != true) device_begin_ok = false;
 	if(!device_begin_ok){
 		hds.println("failed to init pwm");
 		device_begin_ok = true;			// reset for next device
 		all_device_begin_ok = false;
 	}
-	// setup PWM for output
-	_pwm.reset();
-	delay(250);
+
 	_pwm.setOutputMode(pwm_out_types::pwm_out_totem_pole);
 	_pwm.setPwmFreq(1000.0);
 	// initialize the htr power values
@@ -66,15 +99,7 @@ bool hot_diggity::begin(){
 	}else{
 		hds.println("failed to find one or more i2c parts");
 	}
-	// setup the port_expander
-	// write to the port first before turning outputs on
-  	_p_exp.writeExPort(P_EX_LED | P_EX_PWM_EN);
-	// set port pins up
-	{
-		uint8_t ins = P_EX_BRD_ID_MASK | P_EX_BRD_REV_MASK;
-		// (inv/norm, in/out, dr_str1,2, en/dis pupd, pu/pd, od/pushpull)
-  		_p_exp.setupExPort(0x00, ins, 0xFF, 0xFF, ins, ins, 0);
-	}
+
 	// read board id and version
 	get_board_info();
 	// set the polling rate and polling active stuff
@@ -133,26 +158,29 @@ void hot_diggity::setPwmOutEn(bool turn_on){
 /// @param htr_num heater to set power level of (use pwm_info::pwm_sel enumeration)
 /// @param power_mw integer value in milli-watts for heater power
 void hot_diggity::setHeaterPower(pwm_info::pwm_sel htr_num, uint16_t power_mw){
-	// see if there is enough power to grant the request
-	int budget = getTotalHeaterPwr();
-	budget -= _htr_pwr[htr_num];
-	budget += power_mw;
-	bool over_budget = (budget > 3000) ? true : false;
-	bool over_power = (power_mw > 1000) ? true : false;
-	if (over_budget || over_power){
-		// send error message, do not execute
-		if (over_budget) {
-			Serial.println("** ERROR -- requested over 3000mW total");
+	// make sure heater number is in range
+	if(htr_num < 16){
+		// see if there is enough power to grant the request
+		int budget = getTotalHeaterPwr();
+		budget -= _htr_pwr[htr_num];
+		budget += power_mw;
+		bool over_budget = (budget > 3000) ? true : false;
+		bool over_power = (power_mw > 1000) ? true : false;
+		if (over_budget || over_power){
+			// send error message, do not execute
+			if (over_budget) {
+				Serial.println("** ERROR -- requested over 3000mW total");
+			}
+			if(over_power){
+				Serial.println("** ERROR -- over 1000mW requested for heater");
+			}
 		}
-		if(over_power){
-			Serial.println("** ERROR -- over 1000mW requested for heater");
-		}
-	}
 
-	// else set the heater
-	_htr_pwr[htr_num] = power_mw;
-	uint16_t set_to = power_mw * 4;	// power goes in 250uW steps
-	_pwm.setPwmOut(htr_num, set_to, false);
+		// else set the heater
+		_htr_pwr[htr_num] = power_mw;
+		uint16_t set_to = power_mw * 4;	// power goes in 250uW steps
+		_pwm.setPwmOut(htr_num, set_to, false);
+	}
 }
 
 /// @brief gives us the value that the heater is current set to (in mW)
@@ -291,6 +319,71 @@ void hot_diggity::checkPoll(){
 		}
 	}
 }
+#pragma endregion
+
+#pragma region input_processing
+/// @brief reads from the serial port 1 character at a time.  This keeps the Serial timeout
+///			from sending a cmd before it is fully typed in
+/// @returns if a commmand is ready for parsing (true or false), if true call getCommand()
+bool hot_diggity::inputMachine(){
+	bool retval = false;
+	switch(hot_diggity::_input_machine_state){
+		case in_mach::idle:
+			if(hds.available()){
+				int val = hds.read();
+				if(val > -1){
+					char c = (char)val;
+					if((c == '\n') || (c == '\r')){
+						// ignore it
+						// hds.println("im: toss");
+					} else {
+						hot_diggity::_cmd_str += String(c);
+						// hds.println("im first_ch: " + hot_diggity::_cmd_str);
+						hot_diggity::_input_machine_state = in_mach::gather;
+					}
+				}
+			}
+			retval = false;
+			break;
+		case in_mach::gather:
+			if(hds.available()){
+				int val = hds.read();
+				if(val > -1){
+					char c = (char)val;
+					if((c == '\n') || (c == '\r')){
+						// hds.println("im - newline: cmd_rdy");
+						// command is done
+						hot_diggity::_input_machine_state = in_mach::cmd_ready;
+					} else {
+						// append to string
+						hot_diggity::_cmd_str += String(c);
+						// hds.println("im new_ch" + hot_diggity::_cmd_str);
+					}
+				}
+			}
+			retval = false;
+		case in_mach::cmd_ready:
+			retval = true;
+			// stay here until the cmd is used
+	}
+	return retval;
+}
+
+/// @brief returns the current command and resets the inputMachine to idle or empty string
+/// @returns current command or empty string (if command not ready)
+String hot_diggity::getCommand(){
+	String retval = "";
+	if(hot_diggity::_input_machine_state == in_mach::cmd_ready){
+		// send back the current command
+		retval = hot_diggity::_cmd_str;
+		// clear the _cmd_str location
+		hot_diggity::_cmd_str = "";
+		// start the machine over at idle
+		hot_diggity::_input_machine_state = in_mach::idle;
+	}
+	return retval;
+}
+
 #pragma endregion
 
 #pragma region private_stuff

@@ -59,3 +59,16 @@ int hd_serial::available(){
     }
     return in_buff;
 }
+
+/// @brief read a char from Serial/SerialUSB (val -1 is error, else it is a char)
+/// @returns an int (-1 error, else char)
+int hd_serial::read(){
+    int rcvd = -1;
+    if(_use_port == ser0){
+        rcvd = Serial.read();
+    }
+    if(_use_port == serusb){
+        rcvd = SerialUSB.read();
+    }
+    return rcvd;
+}

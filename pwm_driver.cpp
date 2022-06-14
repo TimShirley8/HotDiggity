@@ -3,6 +3,8 @@
 
 #include "pwm_driver.h"
 
+// #define DEBUG_CHK 1
+
 ///@brief an empty constructor
 pwm_driver::pwm_driver(void){
 
@@ -29,20 +31,55 @@ bool pwm_driver::init(const uint8_t addr, TwoWire &i2c)
   _prescale_val = 0x1E;     // default value
   _osc_freq = PWM_INT_CLK;  // internal clock
 
+#if DEBUG_CHK
+  for(uint8_t add_num = 0x40; add_num <= 0x7F; add_num++){
+    _i2c->beginTransmission(add_num);
+    uint8_t ret_val = _i2c->endTransmission();
+    if(ret_val == 0){
+      String msg = "i2c found: @addr: " + String(add_num, HEX);
+      SerialUSB.println(msg);
+      _i2c_addr = add_num;
+    } else {
+      SerialUSB.println("fail: " + String(add_num, HEX));
+    }
+  }
+
+  // for(uint8_t add_num = 0x4B; add_num <= 0x7F; add_num++){
+  //   _i2c->beginTransmission(add_num);
+  //   uint8_t ret_val = _i2c->endTransmission();
+  //   if(ret_val == 0){
+  //     String msg = "i2c found: @addr: " + String(add_num, HEX);
+  //     SerialUSB.println(msg);
+  //     _i2c_addr = add_num;
+  //     return true;
+  //   } else {
+  //     SerialUSB.println("fail: " + String(add_num, HEX));
+  //   }
+  // }
+  return false;
+
+#else
   _i2c->beginTransmission(_i2c_addr);
-  if(_i2c->endTransmission() != 0){
+  uint8_t ret_val = _i2c->endTransmission();
+  if(ret_val != 0){
+    String msg = "i2c_err: " + String(ret_val) + " addr: " + String(_i2c_addr, HEX);
+    SerialUSB.println(msg);
     return false;
   }
 
   else{
     return true;
   }
+#endif
 }
 
 /// @brief resets the chip (and gets it ready to run...).  MUSB be called for PWM
 ///         chip to work properly
 void pwm_driver::reset(){
-  i2c_write8(pwm_reg::mode1, pwm_reg::mode1_restart);
+  uint8_t ret_val = i2c_write8(pwm_reg::mode1, pwm_reg::mode1_restart);
+  if(ret_val != 0){
+    SerialUSB.println("reset failed with: " + String(ret_val));
+  }
   delay(10);
 }
 
@@ -188,12 +225,15 @@ uint8_t pwm_driver::i2c_read8(uint8_t reg){
 /// @brief helper function to write a byte to an i2c register
 /// @param reg register that we want to write to
 /// @param value the value we wish to write to the register
-void pwm_driver::i2c_write8(uint8_t reg, uint8_t value){
+uint8_t pwm_driver::i2c_write8(uint8_t reg, uint8_t value){
+  // SerialUSB.println("pwm_i2c_addr = " + String(_i2c_addr, HEX));
   _i2c->beginTransmission(_i2c_addr);
   _i2c->write(reg);
   _i2c->write(value);
-  if(_i2c->endTransmission() != 0){
+  return _i2c->endTransmission();
+  // if(_i2c->endTransmission() != 0){
+  //   return false;
     // for debug
     //SerialUSB.println("failed i2c wrie for pwm");
-  }
+  // }
 }

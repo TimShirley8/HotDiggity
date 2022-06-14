@@ -79,6 +79,15 @@ namespace i2c_addrs{
 	const uint8_t PCA9685_addr   = 0x40;
 }
 
+namespace in_mach{
+	enum inm_states : uint8_t{
+		idle,
+		gather,
+		cmd_ready,
+		hold
+	};
+}
+
 /*
  * Ideally this class will represent the higher level aggregated hardware:
  *    - 13 AS6212 temp sensors
@@ -116,6 +125,8 @@ public:
 	String getPollingState(void);
 	bool getPollingStateBool(void);
 	void checkPoll(void);
+	bool inputMachine(void);
+	String getCommand(void);
 
 private:
 	AS6212 _temp_sense[13];
@@ -129,6 +140,8 @@ private:
 	ulong _last_poll_time;
 	float _t_sense_data[tsense_info::right2 + 1];
 	ulong _t_sense_time[tsense_info::right2 + 1];
+	String _cmd_str;
+	in_mach::inm_states _input_machine_state;
 
 	void get_board_info(void); // retrieve board id and rev to private vars
 };
