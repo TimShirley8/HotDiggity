@@ -79,6 +79,9 @@ void cmd_parser::parseCmd(String cmd_str){
                 case hd_cmds::polling:
                     parse_run_poll_state(cmd_str);
                     break;
+                case hd_cmds::pwm_oe:
+                    parse_run_pwm_state(cmd_str);
+                    break;
                 default:
                     cmd_found = false;
                     break;
@@ -209,6 +212,25 @@ void cmd_parser::parse_run_poll_state(String cmd_str){
     String action_str = get_next_arg(tmp, 0);
     _hd->setPollingState(action_str);
 }
+
+/// @brief will set the pwm output enable state
+/// @param cmd_str string containing the designed state ON or OFF
+void cmd_parser::parse_run_pwm_state(String cmd_str){
+    String msg = "";
+    // strip command and parse the rest
+    String tmp = strip_cmd_str(cmd_str);
+    String set_to = get_next_arg(tmp, 0);
+    if(set_to.equals("ON")){
+        _hd->setPwmOutEn(true);
+        msg += "set Ex PWM OE On";
+    } else if (set_to.equals("OFF")){
+        _hd->setPwmOutEn(false);
+        msg += "set Ex PWM OE Off";
+    } else {
+        // invalide command
+        msg += "invalid command to set PWM OE";
+    }
+    _hd->hds.println(msg);}
 
 /// @brief helper function to remove the command bit of the command string
 /// @param cmd_str string to have the command removed from

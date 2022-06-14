@@ -13,7 +13,7 @@ namespace hd_cmds
     /// @brief enumeration of th ecommands matching the command strings
     enum cmd_nums : uint8_t {
         set_htr = 0, get_htr, get_temp, get_board_info, get_fw_ver,
-        tog_led3, set_led3, set_rgb, set_poll, polling
+        tog_led3, set_led3, set_rgb, set_poll, polling, pwm_oe
     };
     /// @brief actual command strings to parse
     const String cmds[] = {
@@ -26,7 +26,8 @@ namespace hd_cmds
         "SETLED3 ",         /// set the led on the expander port
         "SETRGB ",          /// set the rgb led (on v_htr) pwm values
         "SETPOLL ",         /// sets the temperature polling interval
-        "POLLING "          /// start or stop temperature polling
+        "POLLING ",         /// start or stop temperature polling
+        "PWMOE "            /// turn the pwm output on or off
     };
     /// @brief an actual count of the commands so we can iterate (String array doesn't have a .count poperty)
     const int cmd_count = polling + 1;
@@ -53,6 +54,7 @@ private:
     void parse_run_set_rgb(String cmd_str);
     void parse_run_set_poll(String cmd_str);
     void parse_run_poll_state(String cmd_str);
+    void parse_run_pwm_state(String cmd_str);
     String strip_cmd_str(String in_str);
     String get_next_arg(String in_str, int start);
     String get_next_arg(String in_str, int start, int *found_at);
