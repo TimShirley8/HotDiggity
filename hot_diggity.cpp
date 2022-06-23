@@ -159,7 +159,7 @@ void hot_diggity::setPwmOutEn(bool turn_on){
 /// @param power_mw integer value in milli-watts for heater power
 void hot_diggity::setHeaterPower(pwm_info::pwm_sel htr_num, uint16_t power_mw){
 	// make sure heater number is in range
-	if(htr_num < 16){
+	if(htr_num <= pwm_info::pwm_led){
 		// see if there is enough power to grant the request
 		int budget = getTotalHeaterPwr();
 		budget -= _htr_pwr[htr_num];
@@ -169,17 +169,20 @@ void hot_diggity::setHeaterPower(pwm_info::pwm_sel htr_num, uint16_t power_mw){
 		if (over_budget || over_power){
 			// send error message, do not execute
 			if (over_budget) {
-				Serial.println("** ERROR -- requested over 3000mW total");
+				hds.println("** ERROR -- requested over 3000mW total");
 			}
 			if(over_power){
-				Serial.println("** ERROR -- over 1000mW requested for heater");
+				hds.println("** ERROR -- over 1000mW requested for heater");
 			}
-		}
-
+		} else {
 		// else set the heater
-		_htr_pwr[htr_num] = power_mw;
-		uint16_t set_to = power_mw * 4;	// power goes in 250uW steps
-		_pwm.setPwmOut(htr_num, set_to, false);
+			_htr_pwr[htr_num] = power_mw;
+			uint16_t set_to = power_mw * 4;	// power goes in 250uW steps
+			_pwm.setPwmOut(htr_num, set_to, false);
+		}
+	} else {
+		// display an error
+		hds.println("*** ERROR: not a valid heater number");
 	}
 }
 
@@ -189,7 +192,7 @@ void hot_diggity::setHeaterPower(pwm_info::pwm_sel htr_num, uint16_t power_mw){
 uint16_t hot_diggity::getHeaterPower(pwm_info::pwm_sel htr_num){
 	uint16_t val = _pwm.getPwm(htr_num);
 	if(val == pwm_errors::pwm_val_read_error){
-		Serial.println("error reading heater: " + String(htr_num));
+		hds.println("error reading heater: " + String(htr_num));
 		return pwm_errors::pwm_val_read_error;
 	}
 	val /= 4;	// need to change to mW from 250uW increments

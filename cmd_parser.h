@@ -30,7 +30,7 @@ namespace hd_cmds
         "PWMOE "            /// turn the pwm output on or off
     };
     /// @brief an actual count of the commands so we can iterate (String array doesn't have a .count poperty)
-    const int cmd_count = polling + 1;
+    const int cmd_count = pwm_oe + 1;
 } // namespace hd_cmds
 
 /// @class cmd_parser
