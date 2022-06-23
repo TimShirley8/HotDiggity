@@ -188,9 +188,9 @@ void hot_diggity::setHeaterPower(pwm_info::pwm_sel htr_num, uint16_t power_mw){
 /// @returns heater setting in milli-watts
 uint16_t hot_diggity::getHeaterPower(pwm_info::pwm_sel htr_num){
 	uint16_t val = _pwm.getPwm(htr_num);
-	if(val == PWM_VAL_ERROR){
+	if(val == pwm_errors::pwm_val_read_error){
 		Serial.println("error reading heater: " + String(htr_num));
-		return PWM_VAL_ERROR;
+		return pwm_errors::pwm_val_read_error;
 	}
 	val /= 4;	// need to change to mW from 250uW increments
 	// *** TODO -- make sure this value matches _htr_pwr[htr_num] value

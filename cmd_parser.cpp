@@ -121,7 +121,7 @@ void cmd_parser::parse_run_get_heater(String cmd_str){
 
     // now get the value
     uint16_t htr_pwr = _hd->getHeaterPower(pwm_num);
-    if(htr_pwr != PWM_VAL_ERROR){
+    if(htr_pwr != pwm_errors::pwm_val_read_error){
         msg += "heater is set to " + String(htr_pwr) + "mW";
         _hd->hds.println(msg);
     }

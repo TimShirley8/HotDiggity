@@ -141,32 +141,26 @@ void pwm_driver::setOutputMode(pwm_out_types::pwm_out_type_vals out_mode){
 uint16_t pwm_driver::getPwm(uint8_t pwm_num){
   // calc address to proper PWM base address)
   int start_reg = pwm_reg::on_lsb + (pwm_reg::next_reg_inc * pwm_num);
-  // ask for 3 bytes (ON_LSB, ON_MSB, OFF_LSB, OFF_MSB)
-  int to_read = _i2c->requestFrom((int)_i2c_addr, start_reg, (int)4);
+  // ask for 4 bytes (ON_LSB, ON_MSB, OFF_LSB, OFF_MSB)
+  uint8_t pwm_vals[4];
+  uint8_t rcvd = pwm_driver::i2c_readBytes(start_reg, 4, &pwm_vals[0]);
   uint16_t pwm_on_val = 0;
-  if(_i2c->available()){
-    uint8_t lsbyte = _i2c->read();
-    pwm_on_val += lsbyte;
-    if(_i2c->available()){
-      uint8_t msbyte = _i2c->read();
-      if(msbyte & PWM_MSB_ON){
-        pwm_on_val = 4095;
-      }
-      pwm_on_val |= (((uint16_t)(msbyte & 0x0F)) << 8);
-      if(_i2c->available()){
-        uint8_t lval_lsbyte = _i2c->read();   // read and ignore
-        if(_i2c->available()){
-          uint8_t lval_msbyte = _i2c->read();
-          // check for low override
-          if((lval_msbyte & PWM_MSB_OFF) == PWM_MSB_OFF){
-            pwm_on_val = 0;
-          }
-          return pwm_on_val;
-        }
-      }
+
+  if(rcvd == 4){
+    // check for full on/off conditions
+    if(pwm_vals[3] & PWM_MSB_OFF){
+      return 0;
     }
+    if(pwm_vals[1] & PWM_MSB_ON){
+      return 4095;
+    }
+    pwm_on_val = (((uint16_t)pwm_vals[3]) << 8) | pwm_vals[2];
+    return pwm_on_val;
   }
-  return PWM_VAL_ERROR;    // use this an error
+  else {
+    // output an error
+    return pwm_errors::pwm_val_read_error;
+  }
 }
 
 /// @brief sets the PWM registers for active "on" and inactive "off" time
@@ -236,4 +230,29 @@ uint8_t pwm_driver::i2c_write8(uint8_t reg, uint8_t value){
     // for debug
     //SerialUSB.println("failed i2c wrie for pwm");
   // }
+}
+
+/// @brief helper function to read multiple bytes from i2c register
+/// @param reg starting register that we want to read from
+/// @param len number of bytes we want to read
+/// @param data pointer to where data should be stored (caller must allocate)
+/// @returns number of bytes read
+uint8_t pwm_driver::i2c_readBytes(uint8_t reg, uint8_t len, uint8_t* data){
+  uint8_t rcvd_cnt = 0;
+  // let device know which reg we want to read from
+  _i2c->beginTransmission(_i2c_addr);
+  _i2c->write(reg);
+  _i2c->endTransmission();
+
+  _i2c->requestFrom(_i2c_addr, len);
+  uint8_t to_get_cnt = len;
+  uint8_t *tmp = data;   // this way we leave the data pointer where it is.
+
+  while(_i2c->available() && to_get_cnt--){
+    uint8_t b = _i2c->read();
+    // SerialUSB.println("got: 0x" + String(b, HEX));
+    *tmp++ = b;
+    rcvd_cnt++;
+  }
+  return rcvd_cnt;
 }

@@ -64,14 +64,15 @@ namespace pwm_reg{
 #define PWM_MIN_FREQ        48
 #define PWM_MAX_FREQ        3052
 
-// some error codes
-#define PWM_VAL_ERROR       10001
-
 namespace pwm_out_types{
 	enum pwm_out_type_vals : bool {
 		pwm_out_open_drain = false,
 		pwm_out_totem_pole = true
 	};
+}
+
+namespace pwm_errors{
+	const uint16_t pwm_val_read_error = 9999;
 }
 
 class pwm_driver {
@@ -96,6 +97,7 @@ private:
 
   uint8_t i2c_read8(uint8_t reg);
   uint8_t i2c_write8(uint8_t reg, uint8_t value);
+  uint8_t i2c_readBytes(uint8_t reg, uint8_t len, uint8_t* data);
 };
 
 #endif
