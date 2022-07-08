@@ -368,13 +368,13 @@ void hot_diggity::rbTest(){
 	_poll_active = false;
 	hds.println("Testing Right Board....");
 	// turn on heater 7 and make sure temp 11 goes up
-	hot_diggity::chk_t_rise(7, 11, 7500);
+	hot_diggity::chk_t_rise(7, 11, 8000);
 	// turn off heater 7 and make sure temp 11 goes down
 	hot_diggity::chk_t_fall(7, 11, 16000);
 	// turn on heater 8 and make sure temp 12 goes up
-	hot_diggity::chk_t_rise(8, 12, 7000);
+	hot_diggity::chk_t_rise(8, 12, 8000);
 	// turn off heater 8 and make sure temp 12 goes down
-	hot_diggity::chk_t_fall(8, 12, 15000) ;
+	hot_diggity::chk_t_fall(8, 12, 16000) ;
 	hds.println("Right Board Test Complete.");
 }
 
@@ -499,24 +499,45 @@ void hot_diggity:: chk_t_rise(uint8_t htr, uint8_t tsen, unsigned long t_run){
 		return;
 	}
 	float tval_fl = (float)t_run/1000.0;
+	float t_temp = t_base;
+	bool hit_target = false;
+	unsigned long t_start = millis();
+	unsigned long t_cur = t_start;
 	// turn on heater and make sure temp goes up
+	hds.println("check t:" + String(tsen) + " h: " + String(htr) + " --> heating (" + String(tval_fl) + " secs max)....");
 	hot_diggity::setHeaterPower((pwm_info::pwm_sel)htr, 200);
-	hds.println("check t:" + String(tsen) + " h: " + String(htr) + " --> heating (" + String(tval_fl) + " secs)....");
-	delay(t_run);		// wait seconds
-	// check temp
-	float t_temp = hot_diggity::getTemperature((tsense_info::tsense)tsen);
-	if((t_base + 2.0 ) < t_temp){
-		// good
-		String msg = "Heater " + String(htr) + ", Temp " +
-			String(tsen) + " heat up - OK";
-		hds.println(msg);
-		hds.println("T[0]: " + String(t_base) + ", T[1]: " + String(t_temp));
-	} else {
-		// bad
-		String msg = "*** FAIL *** Heater " + String(htr) + ", Temp " +
-			String(tsen) + " heat up - FAIL";
-		hds.println(msg);
-		hds.println("T[0]: " + String(t_base) + ", T[1]: " + String(t_temp));
+	// check temp in loop (two thresholds 1 for faster than max time, other at max time)
+	while(hit_target == false){
+		t_temp = hot_diggity::getTemperature((tsense_info::tsense)tsen);
+		t_cur = millis();
+		if((t_cur - t_start) >= t_run){
+			if((t_base + 2.25 ) < t_temp){
+				// good
+				String msg = "Heater " + String(htr) + ", Temp " +
+					String(tsen) + " heat up - OK";
+				hds.println(msg);
+				hds.println("T[0]: " + String(t_base) + ", T[1]: " + String(t_temp));
+			} else {
+				// bad
+				String msg = "*** FAIL *** Heater " + String(htr) + ", Temp " +
+					String(tsen) + " heat up - FAIL";
+				hds.println(msg);
+				hds.println("T[0]: " + String(t_base) + ", T[1]: " + String(t_temp));
+			}
+			hit_target = true;		// just exit loop, hit_target may not be real
+		} else {
+			// if we haven't timed out we go with a higher temp diff
+			if((t_base + 3.0 ) < t_temp){
+				// good
+				float t_tgt = (float)(millis() - t_start)/1000.0;
+				String msg = "Heater " + String(htr) + ", Temp " +
+					String(tsen) + " heat up - OK";
+				msg += " -> " + String(t_tgt) + " secs";
+				hds.println(msg);
+				hds.println("T[0]: " + String(t_base) + ", T[1]: " + String(t_temp));
+				hit_target = true;
+			}
+		}
 	}
 }
 
@@ -527,24 +548,44 @@ void hot_diggity:: chk_t_fall(uint8_t htr, uint8_t tsen, unsigned long t_run){
 		return;
 	}
 	float tval_fl = (float)t_run/1000.0;
+	float t_temp = t_base;
+	bool hit_target = false;
+	unsigned long t_start = millis();
+	unsigned long t_cur = t_start;
 	// turn on heater and make sure temp goes up
+	hds.println("check t:" + String(tsen) + " h: " + String(htr) + " --> cooling (" + String(tval_fl) + " secs max)....");
 	hot_diggity::setHeaterPower((pwm_info::pwm_sel)htr, 0);
-	hds.println("check t:" + String(tsen) + " h: " + String(htr) + " --> cooling (" + String(tval_fl) + " secs)....");
-	delay(t_run);		// wait
-	// check temp
-	float t_temp = hot_diggity::getTemperature((tsense_info::tsense)tsen);
-	if((t_base - 2.0 ) > t_temp){
-		// good
-		String msg = "Heater " + String(htr) + ", Temp " +
-			String(tsen) + " cool down - OK";
-		hds.println(msg);
-		hds.println("T[0]: " + String(t_base) + ", T[1]: " + String(t_temp));
-	} else {
-		// bad
-		String msg = "*** FAIL *** Heater " + String(htr) + ", Temp " +
-			String(tsen) + " cool down - FAIL";
-		hds.println(msg);
-		hds.println("T[0]: " + String(t_base) + ", T[1]: " + String(t_temp));
+	while(hit_target == false){
+		// check temp
+		t_temp = hot_diggity::getTemperature((tsense_info::tsense)tsen);
+		t_cur = millis();
+		if((t_cur - t_start) >= t_run){
+			if((t_base - 1.75 ) > t_temp){
+				// good
+				String msg = "Heater " + String(htr) + ", Temp " +
+					String(tsen) + " cool down - OK";
+				hds.println(msg);
+				hds.println("T[0]: " + String(t_base) + ", T[1]: " + String(t_temp));
+			} else {
+				// bad
+				String msg = "*** FAIL *** Heater " + String(htr) + ", Temp " +
+					String(tsen) + " cool down - FAIL";
+				hds.println(msg);
+				hds.println("T[0]: " + String(t_base) + ", T[1]: " + String(t_temp));
+			}
+			hit_target = true;
+		} else {
+			if((t_base - 2.5 ) > t_temp){
+				float t_tgt = (float)(millis() - t_start)/1000.0;
+				// good
+				String msg = "Heater " + String(htr) + ", Temp " +
+					String(tsen) + " cool down - OK";
+				msg += " -> " + String(t_tgt) + " secs";
+				hds.println(msg);
+				hds.println("T[0]: " + String(t_base) + ", T[1]: " + String(t_temp));
+				hit_target = true;
+			}
+		}
 	}
 }
 #pragma endregion
