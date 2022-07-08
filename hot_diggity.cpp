@@ -361,6 +361,7 @@ void hot_diggity::scanI2cAddresses(){
 	}
 }
 
+/// @brief will test the temp sensors and heaters on right board
 void hot_diggity::rbTest(){
 	float temp11, temp12;
 
@@ -378,6 +379,7 @@ void hot_diggity::rbTest(){
 	hds.println("Right Board Test Complete.");
 }
 
+/// @brief will test the temp sensors and heaters on control board
 void hot_diggity::cbTest(){
 	float temp0, temp1;
 	// turn off polling
@@ -394,6 +396,8 @@ void hot_diggity::cbTest(){
 	hds.println("Corner Board Test Complete.");
 }
 
+/// @brief will test the heaters with corresponding temp sensors on flex board
+///			does not test the temp sensors that aren't near the heaters
 void hot_diggity::fbTest(){
 	// turn off polling
 	_poll_active = false;
@@ -492,6 +496,11 @@ void hot_diggity::get_board_info(){
 	}
 }
 
+/// @brief will turn on heater (200 mW) and check for a temp increase (currently fixed at
+///			3.0C for early out and 2.25C for timeout limit)
+/// @param htr is the heater number to turn on
+/// @param tsen is the temp sensor number to read
+/// @param t_run is the max time (in msec) to run before declaring failure
 void hot_diggity:: chk_t_rise(uint8_t htr, uint8_t tsen, unsigned long t_run){
 	float t_base = hot_diggity::getTemperature((tsense_info::tsense)tsen);
 	if(t_base < 0.0){
@@ -541,6 +550,11 @@ void hot_diggity:: chk_t_rise(uint8_t htr, uint8_t tsen, unsigned long t_run){
 	}
 }
 
+/// @brief will turn off heater and check for a temp decline (currently fixed at 2.5C for early
+///			out and 1.75C for timeout limit)
+/// @param htr is the heater number to turn off
+/// @param tsen is the temp sensor number to read
+/// @param t_run is the max time (in msec) to run before declaring failure
 void hot_diggity:: chk_t_fall(uint8_t htr, uint8_t tsen, unsigned long t_run){
 	float t_base = hot_diggity::getTemperature((tsense_info::tsense)tsen);
 	if(t_base < 0.0){
