@@ -125,6 +125,10 @@ public:
 	String getPollingState(void);
 	bool getPollingStateBool(void);
 	void checkPoll(void);
+	void scanI2cAddresses(void);
+	void rbTest(void);
+	void cbTest(void);
+	void fbTest(void);
 	bool inputMachine(void);
 	String getCommand(void);
 
@@ -142,6 +146,8 @@ private:
 	ulong _t_sense_time[tsense_info::right2 + 1];
 	String _cmd_str;
 	in_mach::inm_states _input_machine_state;
+	void chk_t_rise(uint8_t htr, uint8_t tsen, unsigned long t_run);
+	void chk_t_fall(uint8_t htr, uint8_t tsen, unsigned long t_run);
 
 	void get_board_info(void); // retrieve board id and rev to private vars
 };

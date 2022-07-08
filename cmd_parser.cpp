@@ -82,6 +82,21 @@ void cmd_parser::parseCmd(String cmd_str){
                 case hd_cmds::pwm_oe:
                     parse_run_pwm_state(cmd_str);
                     break;
+                case hd_cmds::i2c_scan:
+                    parse_run_i2c_scan();
+                    break;
+                case hd_cmds::test_all:
+                    parse_run_test_all();
+                    break;
+                case hd_cmds::rb_test:
+                    parse_run_rb_test();
+                    break;
+                case hd_cmds::cb_test:
+                    parse_run_cb_test();
+                    break;
+                case hd_cmds::fb_test:
+                    parse_run_fb_test();
+                    break;
                 default:
                     cmd_found = false;
                     break;
@@ -231,6 +246,33 @@ void cmd_parser::parse_run_pwm_state(String cmd_str){
         msg += "invalid command to set PWM OE";
     }
     _hd->hds.println(msg);}
+
+/// @brief scans valid i2c addresses and returns status of each
+void cmd_parser::parse_run_i2c_scan(){
+    _hd->scanI2cAddresses();
+}
+
+/// @brief tests all the heaters and temp sensors
+void cmd_parser::parse_run_test_all(){
+    parse_run_cb_test();
+    parse_run_fb_test();
+    parse_run_rb_test();
+}
+
+/// @brief tests all the heaters and temp sensors on right board
+void cmd_parser::parse_run_rb_test(){
+    _hd->rbTest();
+}
+
+/// @brief tests all the heaters and temp sensors on control board
+void cmd_parser::parse_run_cb_test(){
+    _hd->cbTest();
+}
+
+/// @brief tests all the heaters and temp sensors on flex board
+void cmd_parser::parse_run_fb_test(){
+    _hd->fbTest();
+}
 
 /// @brief helper function to remove the command bit of the command string
 /// @param cmd_str string to have the command removed from

@@ -324,6 +324,97 @@ void hot_diggity::checkPoll(){
 }
 #pragma endregion
 
+#pragma region self_test
+
+/// @brief goes through and reports the status for all valid i2c addresses
+void hot_diggity::scanI2cAddresses(){
+	// make sure we can talk to parts or return false
+	Wire.beginTransmission(i2c_addrs::PCAL6408A_addr);
+	if(Wire.endTransmission() != 0){
+		hds.println("Port Ex - Fail");
+	} else {
+		hds.println("Port Ex - OK");
+	}
+	Wire.beginTransmission(i2c_addrs::PCA9685_addr);
+	if(Wire.endTransmission() != 0){
+		hds.println("PWM chip - Fail");
+	} else {
+		hds.println("PWM chip - OK");
+	}
+	for(int i = (int)tsense_info::ctrl1; i <= (int)tsense_info::flexi5; i++){
+		uint8_t t_addr = tsense_info::tsense_adr[i];
+		Wire.beginTransmission(t_addr);
+		if(Wire.endTransmission() != 0){
+			hds.println(String(t_addr, HEX) + " - Fail");
+		} else {
+			hds.println(String(t_addr, HEX) + " - OK");
+		}
+	}
+	for(int i = (int)tsense_info::flexi6; i <= (int)tsense_info::right2; i++){
+		uint8_t t_addr = tsense_info::tsense_adr[i]	;
+		Wire1.beginTransmission(t_addr);
+		if(Wire1.endTransmission() != 0){
+			hds.println(String(t_addr, HEX) + " - Fail");
+		} else {
+			hds.println(String(t_addr, HEX) + " - OK");
+		}
+	}
+}
+
+void hot_diggity::rbTest(){
+	float temp11, temp12;
+
+	// turn off polling
+	_poll_active = false;
+	hds.println("Testing Right Board....");
+	// turn on heater 7 and make sure temp 11 goes up
+	hot_diggity::chk_t_rise(7, 11, 7500);
+	// turn off heater 7 and make sure temp 11 goes down
+	hot_diggity::chk_t_fall(7, 11, 16000);
+	// turn on heater 8 and make sure temp 12 goes up
+	hot_diggity::chk_t_rise(8, 12, 7000);
+	// turn off heater 8 and make sure temp 12 goes down
+	hot_diggity::chk_t_fall(8, 12, 15000) ;
+	hds.println("Right Board Test Complete.");
+}
+
+void hot_diggity::cbTest(){
+	float temp0, temp1;
+	// turn off polling
+	_poll_active = false;
+	hds.println("Testing Corner Board....");
+	// turn on heater 0 and make sure temp 1 goes up
+	hot_diggity::chk_t_rise(0, 1, 6000);
+	// turn off heater 0 and make sure temp 1 goes down
+	hot_diggity::chk_t_fall(0, 1, 15000);
+	// turn on heater 1 and make sure temp 0 goes up
+	hot_diggity::chk_t_rise(1, 0, 6000);
+	// turn off heater 1 and make sure temp 0 goes down
+	hot_diggity::chk_t_fall(1, 0, 15000);
+	hds.println("Corner Board Test Complete.");
+}
+
+void hot_diggity::fbTest(){
+	// turn off polling
+	_poll_active = false;
+	hds.println("Testing Flex Board....");
+	// turn on heaters 6, 2, 5, 3, 4 and make sure temps 2, 3, 6, 9, 10 respond
+	// and turn off heaters 6, 2, 5, 3, 4 and make sure temps 2, 3, 6, 9, 10 respond
+	hot_diggity::chk_t_rise(6, 2, 3000);
+	hot_diggity::chk_t_fall(6, 2, 5000);
+	hot_diggity::chk_t_rise(2, 3, 3000);
+	hot_diggity::chk_t_fall(2, 3, 5000);
+	hot_diggity::chk_t_rise(5, 6, 3000);
+	hot_diggity::chk_t_fall(5, 6, 5000);
+	hot_diggity::chk_t_rise(3, 9, 3000);
+	hot_diggity::chk_t_fall(3, 9, 5000);
+	hot_diggity::chk_t_rise(4, 10, 3000);
+	hot_diggity::chk_t_fall(4, 10, 5000);
+	hds.println("Flex Board Test Complete.");
+}
+
+#pragma endregion
+
 #pragma region input_processing
 /// @brief reads from the serial port 1 character at a time.  This keeps the Serial timeout
 ///			from sending a cmd before it is fully typed in
@@ -398,6 +489,62 @@ void hot_diggity::get_board_info(){
 		uint8_t brd = _p_exp.readExPort();
 		_board_rev = brd & P_EX_BRD_REV_MASK;
 		_board_id = (brd & P_EX_BRD_ID_MASK) >> P_EX_BRD_ID_SHIFT;
+	}
+}
+
+void hot_diggity:: chk_t_rise(uint8_t htr, uint8_t tsen, unsigned long t_run){
+	float t_base = hot_diggity::getTemperature((tsense_info::tsense)tsen);
+	if(t_base < 0.0){
+		hds.println("T" + String(tsen) + " failure: " + String(t_base));
+		return;
+	}
+	float tval_fl = (float)t_run/1000.0;
+	// turn on heater and make sure temp goes up
+	hot_diggity::setHeaterPower((pwm_info::pwm_sel)htr, 200);
+	hds.println("check t:" + String(tsen) + " h: " + String(htr) + " --> heating (" + String(tval_fl) + " secs)....");
+	delay(t_run);		// wait seconds
+	// check temp
+	float t_temp = hot_diggity::getTemperature((tsense_info::tsense)tsen);
+	if((t_base + 2.0 ) < t_temp){
+		// good
+		String msg = "Heater " + String(htr) + ", Temp " +
+			String(tsen) + " heat up - OK";
+		hds.println(msg);
+		hds.println("T[0]: " + String(t_base) + ", T[1]: " + String(t_temp));
+	} else {
+		// bad
+		String msg = "*** FAIL *** Heater " + String(htr) + ", Temp " +
+			String(tsen) + " heat up - FAIL";
+		hds.println(msg);
+		hds.println("T[0]: " + String(t_base) + ", T[1]: " + String(t_temp));
+	}
+}
+
+void hot_diggity:: chk_t_fall(uint8_t htr, uint8_t tsen, unsigned long t_run){
+	float t_base = hot_diggity::getTemperature((tsense_info::tsense)tsen);
+	if(t_base < 0.0){
+		hds.println("T" + String(tsen) + " failure: " + String(t_base));
+		return;
+	}
+	float tval_fl = (float)t_run/1000.0;
+	// turn on heater and make sure temp goes up
+	hot_diggity::setHeaterPower((pwm_info::pwm_sel)htr, 0);
+	hds.println("check t:" + String(tsen) + " h: " + String(htr) + " --> cooling (" + String(tval_fl) + " secs)....");
+	delay(t_run);		// wait
+	// check temp
+	float t_temp = hot_diggity::getTemperature((tsense_info::tsense)tsen);
+	if((t_base - 2.0 ) > t_temp){
+		// good
+		String msg = "Heater " + String(htr) + ", Temp " +
+			String(tsen) + " cool down - OK";
+		hds.println(msg);
+		hds.println("T[0]: " + String(t_base) + ", T[1]: " + String(t_temp));
+	} else {
+		// bad
+		String msg = "*** FAIL *** Heater " + String(htr) + ", Temp " +
+			String(tsen) + " cool down - FAIL";
+		hds.println(msg);
+		hds.println("T[0]: " + String(t_base) + ", T[1]: " + String(t_temp));
 	}
 }
 #pragma endregion

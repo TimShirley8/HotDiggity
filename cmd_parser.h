@@ -13,7 +13,8 @@ namespace hd_cmds
     /// @brief enumeration of th ecommands matching the command strings
     enum cmd_nums : uint8_t {
         set_htr = 0, get_htr, get_temp, get_board_info, get_fw_ver,
-        tog_led3, set_led3, set_rgb, set_poll, polling, pwm_oe
+        tog_led3, set_led3, set_rgb, set_poll, polling, pwm_oe, i2c_scan,
+        test_all, rb_test, cb_test, fb_test
     };
     /// @brief actual command strings to parse
     const String cmds[] = {
@@ -27,10 +28,15 @@ namespace hd_cmds
         "SETRGB ",          /// set the rgb led (on v_htr) pwm values
         "SETPOLL ",         /// sets the temperature polling interval
         "POLLING ",         /// start or stop temperature polling
-        "PWMOE "            /// turn the pwm output on or off
+        "PWMOE ",           /// turn the pwm output on or off
+        "I2CSCAN",          /// scan all valid i2c addresses and report
+        "TESTALL",          /// Test Heaters and Temp sensors
+        "RBTEST",           /// Test Heaters and Temp Sesnors on Right board
+        "CBTEST",           /// Test Heaters nad Temp Sensors on Control Board
+        "FBTEST"            /// Test Heaters and Temp Sensors on Flex Board
     };
     /// @brief an actual count of the commands so we can iterate (String array doesn't have a .count poperty)
-    const int cmd_count = pwm_oe + 1;
+    const int cmd_count = fb_test + 1;
 } // namespace hd_cmds
 
 /// @class cmd_parser
@@ -55,6 +61,11 @@ private:
     void parse_run_set_poll(String cmd_str);
     void parse_run_poll_state(String cmd_str);
     void parse_run_pwm_state(String cmd_str);
+    void parse_run_i2c_scan(void);
+    void parse_run_test_all(void);
+    void parse_run_rb_test(void);
+    void parse_run_cb_test(void);
+    void parse_run_fb_test(void);
     String strip_cmd_str(String in_str);
     String get_next_arg(String in_str, int start);
     String get_next_arg(String in_str, int start, int *found_at);
