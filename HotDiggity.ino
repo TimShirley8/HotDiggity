@@ -5,7 +5,7 @@
  *
  *  @copyright 2022-present Meta Platforms, Inc. and affiliates.
  *              Confidential and proprietary.
- *//***************************************************************************/
+*//***************************************************************************/
 
 #include <Arduino.h>
 #include <Wire.h>   // gives us the I2C library

@@ -5,7 +5,7 @@
  *
  *  @copyright 2022-present Meta Platforms, Inc. and affiliates.
  *              Confidential and proprietary.
- *//***************************************************************************/
+*//***************************************************************************/
 
 #ifndef Pca9685_H_
 #define Pca9685_H_

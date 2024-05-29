@@ -5,7 +5,7 @@
  *
  *  @copyright 2022-present Meta Platforms, Inc. and affiliates.
  *              Confidential and proprietary.
- *//***************************************************************************/
+*//***************************************************************************/
 
 #include "HotDiggity.h"
 
@@ -14,6 +14,10 @@
 /// @brief creates an instance of hot_diggity
 hot_diggity::hot_diggity(){
 }
+int i2c_read_status = 0;
+int i2c_write_status = 0;
+int* ptr_read_status = &i2c_read_status; //TODO add these to the read and write functions here
+int* ptr_write_status = &i2c_write_status;
 
 /// @brief initializes/begins the port expander, the pwm chip, and the temp
 ///			sensors for the hot diggity system.  Also gets the board information
@@ -75,24 +79,27 @@ bool hot_diggity::begin(){
 	_pwm.setOutputMode(pwm_out_types::kPwmOutTotemPole);
 	_pwm.setPwmFreq(1000.0);
 	// initialize the htr power values
-	for(int i = (int)pwm_info::pwm_left1; i <= (int)pwm_info::pwm_right2; i++){
+	for(int i = (int)pwm_info::pwm_flex0; i <= (int)pwm_info::pwm_flex9; i++){
 		_htr_pwr[i] = 0;
 	}
 	// temp sensors
-	for(int i = (int)tsense_info::ctrl1; i <= (int)tsense_info::flexi5; i++){
+	for(int i = (int)tsense_info::flexi1; i <= (int)tsense_info::flexi7; i++){
 		if(_temp_sense[i].begin(tsense_info::tsense_adr[i], Wire) != true){
 			device_begin_ok = false;
+      hds.println("NOT FOUND Wire  " + String(i) + "adr " + String(tsense_info::tsense_adr[i]));
 		}
 	}
+//ctrl1
+
 	if(!device_begin_ok){
 		hds.println("failed to init temp on i2c0");
 		device_begin_ok = true;			// reset for next device
 		all_device_begin_ok = false;
 	}
-
-	for(int i = (int)tsense_info::flexi6; i <= (int)tsense_info::right2; i++){
+	for(int i = (int)tsense_info::flexi8; i <= (int)tsense_info::ctrl1; i++){
 		if(_temp_sense[i].begin(tsense_info::tsense_adr[i], Wire1) != true){
 			device_begin_ok = false;
+      hds.println("NOT FOUND Wire1 " + String(i) + "adr " + String(tsense_info::tsense_adr[i]));
 		}
 	}
 	if(!device_begin_ok){
@@ -112,7 +119,7 @@ bool hot_diggity::begin(){
 	_poll_rate = 5000;		// set to 5 second intervals
 	_poll_active = false;
 	// zero out tsense info
-	for(int i = tsense_info::ctrl1; i <= tsense_info::right2; i++){
+	for(int i = tsense_info::flexi1; i <= tsense_info::ctrl1; i++){
 		_t_sense_data[i] = -99.9;
 		_t_sense_time[i] = 0;
 	}
@@ -210,7 +217,8 @@ uint16_t hot_diggity::getHeaterPower(pwm_info::pwm_sel htr_num){
 /// @returns total heater power in milli-watts
 uint16_t hot_diggity::getTotalHeaterPwr(){
 	uint16_t tot_power = 0;
-	for(int i = (int)pwm_info::pwm_left1; i <= (int)pwm_info::pwm_right2; i++){
+	for(int i = (int)pwm_info::pwm_flex0; i <= (int)pwm_info::pwm_flex9; i++){
+		//hds.println("htr_num: " + String(i) + " htr_pw(mw): " + String(_htr_pwr[i]));
 		tot_power += _htr_pwr[i];
 	}
 	return tot_power;
@@ -318,10 +326,10 @@ void hot_diggity::checkPoll(){
 			*/
 			// read all temp sensors with time stamps
 			String msg = "";
-			for(int i = tsense_info::ctrl1; i <= tsense_info::right2; i++){
+			for(int i = tsense_info::flexi1; i <= tsense_info::ctrl1; i++){
 				_t_sense_data[i] = getTemperature((tsense_info::tsense)i, &_t_sense_time[i]);
 				msg += String(_t_sense_data[i]) + ", " + String(_t_sense_time[i]);
-				if(i < tsense_info::right2) { msg += ", "; }
+				if(i < tsense_info::ctrl1) { msg += ", "; }
 			}
 			// print results
 			hds.println(msg);
@@ -347,22 +355,22 @@ void hot_diggity::scanI2cAddresses(){
 	} else {
 		hds.println("PWM chip - OK");
 	}
-	for(int i = (int)tsense_info::ctrl1; i <= (int)tsense_info::flexi5; i++){
+	for(int i = (int)tsense_info::flexi1; i <= (int)tsense_info::flexi7; i++){
 		uint8_t t_addr = tsense_info::tsense_adr[i];
 		Wire.beginTransmission(t_addr);
 		if(Wire.endTransmission() != 0){
-			hds.println(String(t_addr, HEX) + " - Fail");
+			hds.println("WIRE  " + String(t_addr, HEX) + " - Fail");
 		} else {
-			hds.println(String(t_addr, HEX) + " - OK");
+			hds.println("WIRE  " + String(t_addr, HEX) + " - OK");
 		}
 	}
-	for(int i = (int)tsense_info::flexi6; i <= (int)tsense_info::right2; i++){
+	for(int i = (int)tsense_info::flexi8; i <= (int)tsense_info::ctrl1; i++){
 		uint8_t t_addr = tsense_info::tsense_adr[i]	;
 		Wire1.beginTransmission(t_addr);
 		if(Wire1.endTransmission() != 0){
-			hds.println(String(t_addr, HEX) + " - Fail");
+			hds.println("WIRE1 " + String(t_addr, HEX) + " - Fail");
 		} else {
-			hds.println(String(t_addr, HEX) + " - OK");
+			hds.println("WIRE1 " + String(t_addr, HEX) + " - OK");
 		}
 	}
 }
@@ -408,18 +416,47 @@ void hot_diggity::fbTest(){
 	// turn off polling
 	_poll_active = false;
 	hds.println("Testing Flex Board....");
-	// turn on heaters 6, 2, 5, 3, 4 and make sure temps 2, 3, 6, 9, 10 respond
-	// and turn off heaters 6, 2, 5, 3, 4 and make sure temps 2, 3, 6, 9, 10 respond
-	hot_diggity::chk_t_rise(6, 2, 3000);
-	hot_diggity::chk_t_fall(6, 2, 5000);
+	// turn on/off PWM and watch mapped temp sense for appropriate response
+  /*
+    U	I2C	Addr	PWM   Closest Temp sense
+    U11	0	0x45	0     1  const uint8_t flexi2_adr  = 0x45; // 0x45 Temp Sense FB2
+    U10	0	0x44	1     0  const uint8_t flexi1_adr  = 0x44; // 0x44 Temp Sense FB1
+    U2	0	0x47	2     3  const uint8_t flexi4_adr  = 0x47; // 0x47 Temp Sense FB4
+    U8	1	0x46	3     9  const uint8_t flexi10_adr = 0x46; // 0x46 Temp Sense FB10
+    U9	1	0x47	4     10 const uint8_t flexi11_adr = 0x47; // 0x47 Temp Sense FB11
+    U5	0	0x4A	5     6  const uint8_t flexi7_adr  = 0x4A; // 0x4A Temp Sense FB7
+    U1	0	0x46	6     2  const uint8_t flexi3_adr  = 0x46; // 0x46 Temp Sense FB3
+    U6	1	0x44	7     7  const uint8_t flexi8_adr  = 0x44; // 0x44 Temp Sense FB8
+    U7	1	0x45	8     8  const uint8_t flexi9_adr  = 0x45; // 0x45 Temp Sense FB9
+    U3	0	0x48	9     4  const uint8_t flexi5_adr  = 0x48; // 0x48 Temp Sense FB5
+
+    // No associated PWM heater
+    5  const uint8_t flexi6_adr  = 0x49; // 0x49 Temp Sense FB6
+    11 const uint8_t flexi12_adr = 0x48; // 0x48 Temp Sense FB12
+    12 const uint8_t flexi13_adr = 0x49; // 0x49 Temp Sense FB13
+    13 const uint8_t flexi14_adr = 0x4A; // 0x4A Temp Sense FB14
+    const uint8_t ctrl1_adr   = 0x4B; // 0x4B Temp Sense CB1
+    */
+	hot_diggity::chk_t_rise(0, 1, 3000);
+	hot_diggity::chk_t_fall(0, 1, 5000);
+	hot_diggity::chk_t_rise(1, 0, 3000);
+	hot_diggity::chk_t_fall(1, 0, 5000);
 	hot_diggity::chk_t_rise(2, 3, 3000);
 	hot_diggity::chk_t_fall(2, 3, 5000);
-	hot_diggity::chk_t_rise(5, 6, 3000);
-	hot_diggity::chk_t_fall(5, 6, 5000);
 	hot_diggity::chk_t_rise(3, 9, 3000);
 	hot_diggity::chk_t_fall(3, 9, 5000);
 	hot_diggity::chk_t_rise(4, 10, 3000);
 	hot_diggity::chk_t_fall(4, 10, 5000);
+	hot_diggity::chk_t_rise(5, 6, 3000);
+	hot_diggity::chk_t_fall(5, 6, 5000);
+	hot_diggity::chk_t_rise(6, 2, 3000);
+	hot_diggity::chk_t_fall(6, 2, 5000);
+	hot_diggity::chk_t_rise(7, 10, 3000);
+	hot_diggity::chk_t_fall(7, 10, 5000);
+	hot_diggity::chk_t_rise(8, 9, 3000);
+	hot_diggity::chk_t_fall(8, 9, 5000);
+	hot_diggity::chk_t_rise(9, 10, 3000);
+	hot_diggity::chk_t_fall(9, 10, 5000);
 	hds.println("Flex Board Test Complete.");
 }
 

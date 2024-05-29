@@ -5,7 +5,7 @@
  *
  *  @copyright 2022-present Meta Platforms, Inc. and affiliates.
  *              Confidential and proprietary.
- *//***************************************************************************/
+*//***************************************************************************/
 
 #ifndef HotDiggity_H_
 #define HotDiggity_H_
@@ -26,16 +26,16 @@
 // related to PWMs
 namespace pwm_info{
 	enum pwm_sel : uint8_t{
-		pwm_left1 = 0,
-		pwm_left2,
+		pwm_flex0 = 0,
+		pwm_flex1,
 		pwm_flex2,	// pinout changes for ckt routing
+		pwm_flex3,
 		pwm_flex4,
 		pwm_flex5,
-		pwm_flex3,
-		pwm_flex1,
-		pwm_right1,
-		pwm_right2,
-		pwm_nc1,
+		pwm_flex6,
+		pwm_flex7,
+		pwm_flex8,
+		pwm_flex9,
 		pwm_nc2,
 		pwm_nc3,
 		pwm_grn,
@@ -46,9 +46,7 @@ namespace pwm_info{
 }
 namespace tsense_info{
 	enum tsense : uint8_t{
-		ctrl1 = 0,
-		ctrl2,
-		flexi1,
+		flexi1 = 0,
 		flexi2,
 		flexi3,
 		flexi4,
@@ -57,32 +55,42 @@ namespace tsense_info{
 		flexi7,
 		flexi8,
 		flexi9,
-		right1,
-		right2
+		flexi10,
+		flexi11,
+		flexi12,
+    flexi13,
+    flexi14,
+		ctrl1
 	};
-	const uint8_t ctrl1_adr = 0x44;
-	const uint8_t ctrl2_adr = 0x45;
-	const uint8_t flexi1_adr = 0x46;
-	const uint8_t flexi2_adr = 0x47;
-	const uint8_t flexi3_adr = 0x48;
-	const uint8_t flexi4_adr = 0x49;
-	const uint8_t flexi5_adr = 0x4A;
-	const uint8_t flexi6_adr = 0x44;
-	const uint8_t flexi7_adr = 0x45;
-	const uint8_t flexi8_adr = 0x46;
-	const uint8_t flexi9_adr = 0x47;
-	const uint8_t right1_adr = 0x48;
-	const uint8_t right2_adr = 0x49;
 
-	const uint8_t tsense_adr[] = {ctrl1_adr, ctrl2_adr, flexi1_adr, flexi2_adr,
-		flexi3_adr, flexi4_adr, flexi5_adr, flexi6_adr, flexi7_adr, flexi8_adr,
-		flexi9_adr, right1_adr, right2_adr};
+
+
+
+	const uint8_t flexi1_adr  = 0x44; // 0x44 Temp Sense FB1
+	const uint8_t flexi2_adr  = 0x45; // 0x45 Temp Sense FB2
+	const uint8_t flexi3_adr  = 0x46; // 0x46 Temp Sense FB3
+	const uint8_t flexi4_adr  = 0x47; // 0x47 Temp Sense FB4
+	const uint8_t flexi5_adr  = 0x48; // 0x48 Temp Sense FB5
+	const uint8_t flexi6_adr  = 0x49; // 0x49 Temp Sense FB6
+	const uint8_t flexi7_adr  = 0x4A; // 0x4A Temp Sense FB7
+	const uint8_t flexi8_adr  = 0x44; // 0x44 Temp Sense FB8
+	const uint8_t flexi9_adr  = 0x45; // 0x45 Temp Sense FB9
+	const uint8_t flexi10_adr = 0x46; // 0x46 Temp Sense FB10
+	const uint8_t flexi11_adr = 0x47; // 0x47 Temp Sense FB11
+	const uint8_t flexi12_adr = 0x48; // 0x48 Temp Sense FB12
+  const uint8_t flexi13_adr = 0x49; // 0x49 Temp Sense FB13
+  const uint8_t flexi14_adr = 0x4A; // 0x4A Temp Sense FB14
+	const uint8_t ctrl1_adr   = 0x4B; // 0x4B Temp Sense CB1
+
+	const uint8_t tsense_adr[] = {flexi1_adr, flexi2_adr, flexi3_adr, flexi4_adr,
+  flexi5_adr, flexi6_adr, flexi7_adr, flexi8_adr, flexi9_adr, flexi10_adr,
+   flexi11_adr, flexi12_adr, flexi13_adr, flexi14_adr, ctrl1_adr};
 }
 
 // ------------------- Other Component Addresses --------------
 namespace i2c_addrs{
-	const uint8_t PCAL6408A_addr = 0x20;
-	const uint8_t PCA9685_addr   = 0x40;
+	const uint8_t PCAL6408A_addr = 0x20; // 0x20 Port Expander
+	const uint8_t PCA9685_addr   = 0x40; // 0x40 PWM Controller
 }
 
 namespace in_mach{
@@ -132,7 +140,7 @@ public:
 	bool getPollingStateBool(void);
 	void checkPoll(void);
 	void scanI2cAddresses(void);
-	void rbTest(void);
+void rbTest(void);
 	void cbTest(void);
 	void fbTest(void);
 	bool inputMachine(void);
@@ -144,12 +152,12 @@ private:
 	Pcal6408a _p_exp;
 	uint8_t	_board_id;
 	uint8_t _board_rev;
-	uint16_t _htr_pwr[pwm_info::pwm_right2 + 1];
+	uint16_t _htr_pwr[pwm_info::pwm_flex9 + 1];
 	uint16_t _poll_rate;
 	bool _poll_active;
 	ulong _last_poll_time;
-	float _t_sense_data[tsense_info::right2 + 1];
-	ulong _t_sense_time[tsense_info::right2 + 1];
+	float _t_sense_data[tsense_info::ctrl1 + 1];
+	ulong _t_sense_time[tsense_info::ctrl1 + 1];
 	String _cmd_str;
 	in_mach::inm_states _input_machine_state;
 	void chk_t_rise(uint8_t htr, uint8_t tsen, unsigned long t_run);

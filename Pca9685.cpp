@@ -5,7 +5,7 @@
  *
  *  @copyright 2022-present Meta Platforms, Inc. and affiliates.
  *              Confidential and proprietary.
- *//***************************************************************************/
+*//***************************************************************************/
 #include "Pca9685.h"
 
 // #define DEBUG_CHK 1
@@ -82,7 +82,7 @@ bool PwmDriver::init(const uint8_t addr, TwoWire &i2c)
 ///         chip to work properly
 void PwmDriver::reset(){
   uint8_t ret_val = i2cWrite8(pwm_reg::mode1, pwm_reg::mode1_restart);
-  if(ret_val != 0){
+    if(ret_val != 0){
     SerialUSB.println("reset failed with: " + String(ret_val));
   }
   delay(10);
