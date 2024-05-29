@@ -82,7 +82,7 @@ bool hot_diggity::begin(){
 	for(int i = (int)tsense_info::flexi1; i <= (int)tsense_info::flexi7; i++){
 		if(_temp_sense[i].begin(tsense_info::tsense_adr[i], Wire) != true){
 			device_begin_ok = false;
-      hds.println("NOT FOUND Wire  " + String(i) + "adr " + String(tsense_info::tsense_adr[i]));
+			hds.println("NOT FOUND Wire  " + String(i) + "adr " + String(tsense_info::tsense_adr[i], HEX));
 		}
 	}
 
@@ -94,7 +94,8 @@ bool hot_diggity::begin(){
 	for(int i = (int)tsense_info::flexi8; i <= (int)tsense_info::ctrl1; i++){
 		if(_temp_sense[i].begin(tsense_info::tsense_adr[i], Wire1) != true){
 			device_begin_ok = false;
-      		}
+			hds.println("NOT FOUND Wire1 " + String(i) + "adr " + String(tsense_info::tsense_adr[i], HEX));
+		}
 	}
 	if(!device_begin_ok){
 		hds.println("failed to init temp on i2c1");

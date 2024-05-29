@@ -20,7 +20,7 @@ namespace hd_cmds
     enum cmd_nums : uint8_t {
         set_htr = 0, get_htr, get_temp, get_board_info, get_fw_ver,
         tog_led3, set_led3, set_rgb, set_poll, polling, pwm_oe, i2c_scan,
-        test_all, rb_test, cb_test, fb_test
+        test_all, fb_test, cmd_count
     };
     /// @brief actual command strings to parse
     const String cmds[] = {
@@ -40,7 +40,7 @@ namespace hd_cmds
         "FBTEST"            /// Test Heaters and Temp Sensors on Flex Board
     };
     /// @brief an actual count of the commands so we can iterate (String array doesn't have a .count poperty)
-    const int cmd_count = fb_test + 1;
+    //const int cmd_count = fb_test + 1;    // see enum above :)
 } // namespace hd_cmds
 
 /// @class CmdParser

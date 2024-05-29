@@ -58,10 +58,10 @@ namespace tsense_info{
 		flexi10,
 		flexi11,
 		flexi12,
-    flexi13,
-    flexi14,
+		flexi13,
+		flexi14,
 		ctrl1,
-    num_tsense
+		num_tsense
 	};
 
 
@@ -79,13 +79,13 @@ namespace tsense_info{
 	const uint8_t flexi10_adr = 0x46; // 0x46 Temp Sense FB10
 	const uint8_t flexi11_adr = 0x47; // 0x47 Temp Sense FB11
 	const uint8_t flexi12_adr = 0x48; // 0x48 Temp Sense FB12
-  const uint8_t flexi13_adr = 0x49; // 0x49 Temp Sense FB13
-  const uint8_t flexi14_adr = 0x4A; // 0x4A Temp Sense FB14
+	const uint8_t flexi13_adr = 0x49; // 0x49 Temp Sense FB13
+	const uint8_t flexi14_adr = 0x4A; // 0x4A Temp Sense FB14
 	const uint8_t ctrl1_adr   = 0x4B; // 0x4B Temp Sense CB1
 
 	const uint8_t tsense_adr[] = {flexi1_adr, flexi2_adr, flexi3_adr, flexi4_adr,
-  flexi5_adr, flexi6_adr, flexi7_adr, flexi8_adr, flexi9_adr, flexi10_adr,
-   flexi11_adr, flexi12_adr, flexi13_adr, flexi14_adr, ctrl1_adr};
+		flexi5_adr, flexi6_adr, flexi7_adr, flexi8_adr, flexi9_adr, flexi10_adr,
+		flexi11_adr, flexi12_adr, flexi13_adr, flexi14_adr, ctrl1_adr};
 }
 
 // ------------------- Other Component Addresses --------------
@@ -105,13 +105,13 @@ namespace in_mach{
 
 /*
  * Ideally this class will represent the higher level aggregated hardware:
- *    - 13 AS6212 temp sensors
+ *    - 15 AS6212 temp sensors
  *    -  1 I/O port expander (PCAL6408A)
  *         - enable PWM controller output
  *         - read board id, revision
  *         - enable 3V3 LED
  *    -  1 PWM controller (PCA9685)
- *         - 9 heaters pwm settings of 0-4095 (0 to 1024mW in 250uW steps)
+ *         - 10 heaters pwm settings of 0-4095 (0 to 1024mW in 250uW steps)
  *         - 1 RGB LED (on V_HTR)
  *         - 1 Green LED (relative to 3V3)
  */
