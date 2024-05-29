@@ -37,8 +37,6 @@ namespace hd_cmds
         "PWMOE ",           /// turn the pwm output on or off
         "I2CSCAN",          /// scan all valid i2c addresses and report
         "TESTALL",          /// Test Heaters and Temp sensors
-        "RBTEST",           /// Test Heaters and Temp Sesnors on Right board
-        "CBTEST",           /// Test Heaters nad Temp Sensors on Control Board
         "FBTEST"            /// Test Heaters and Temp Sensors on Flex Board
     };
     /// @brief an actual count of the commands so we can iterate (String array doesn't have a .count poperty)
@@ -69,8 +67,6 @@ private:
     void parseRunPwmState(String cmd_str);
     void parseRunI2cScan(void);
     void parseRunTestAll(void);
-    void parseRunRbTest(void);
-    void parseRunCbTest(void);
     void parseRunFbTest(void);
     String stripCmdStr(String in_str);
     String getNextArg(String in_str, int start);

@@ -94,12 +94,6 @@ void CmdParser::parseCmd(String cmd_str){
                 case hd_cmds::test_all:
                     parseRunTestAll();
                     break;
-                case hd_cmds::rb_test:
-                    parseRunRbTest();
-                    break;
-                case hd_cmds::cb_test:
-                    parseRunCbTest();
-                    break;
                 case hd_cmds::fb_test:
                     parseRunFbTest();
                     break;
@@ -260,19 +254,7 @@ void CmdParser::parseRunI2cScan(){
 
 /// @brief tests all the heaters and temp sensors
 void CmdParser::parseRunTestAll(){
-    parseRunCbTest();
     parseRunFbTest();
-    parseRunRbTest();
-}
-
-/// @brief tests all the heaters and temp sensors on right board
-void CmdParser::parseRunRbTest(){
-    _hd->rbTest();
-}
-
-/// @brief tests all the heaters and temp sensors on control board
-void CmdParser::parseRunCbTest(){
-    _hd->cbTest();
 }
 
 /// @brief tests all the heaters and temp sensors on flex board

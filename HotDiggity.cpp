@@ -85,7 +85,6 @@ bool hot_diggity::begin(){
       hds.println("NOT FOUND Wire  " + String(i) + "adr " + String(tsense_info::tsense_adr[i]));
 		}
 	}
-//ctrl1
 
 	if(!device_begin_ok){
 		hds.println("failed to init temp on i2c0");
@@ -95,8 +94,7 @@ bool hot_diggity::begin(){
 	for(int i = (int)tsense_info::flexi8; i <= (int)tsense_info::ctrl1; i++){
 		if(_temp_sense[i].begin(tsense_info::tsense_adr[i], Wire1) != true){
 			device_begin_ok = false;
-      hds.println("NOT FOUND Wire1 " + String(i) + "adr " + String(tsense_info::tsense_adr[i]));
-		}
+      		}
 	}
 	if(!device_begin_ok){
 		hds.println("failed to init temp on i2c1");
@@ -214,7 +212,6 @@ uint16_t hot_diggity::getHeaterPower(pwm_info::pwm_sel htr_num){
 uint16_t hot_diggity::getTotalHeaterPwr(){
 	uint16_t tot_power = 0;
 	for(int i = (int)pwm_info::pwm_flex0; i <= (int)pwm_info::pwm_flex9; i++){
-		//hds.println("htr_num: " + String(i) + " htr_pw(mw): " + String(_htr_pwr[i]));
 		tot_power += _htr_pwr[i];
 	}
 	return tot_power;
@@ -371,41 +368,6 @@ void hot_diggity::scanI2cAddresses(){
 	}
 }
 
-/// @brief will test the temp sensors and heaters on right board
-void hot_diggity::rbTest(){
-	float temp11, temp12;
-
-	// turn off polling
-	_poll_active = false;
-	hds.println("Testing Right Board....");
-	// turn on heater 7 and make sure temp 11 goes up
-	hot_diggity::chk_t_rise(7, 11, 8000);
-	// turn off heater 7 and make sure temp 11 goes down
-	hot_diggity::chk_t_fall(7, 11, 16000);
-	// turn on heater 8 and make sure temp 12 goes up
-	hot_diggity::chk_t_rise(8, 12, 8000);
-	// turn off heater 8 and make sure temp 12 goes down
-	hot_diggity::chk_t_fall(8, 12, 16000) ;
-	hds.println("Right Board Test Complete.");
-}
-
-/// @brief will test the temp sensors and heaters on control board
-void hot_diggity::cbTest(){
-	float temp0, temp1;
-	// turn off polling
-	_poll_active = false;
-	hds.println("Testing Corner Board....");
-	// turn on heater 0 and make sure temp 1 goes up
-	hot_diggity::chk_t_rise(0, 1, 6000);
-	// turn off heater 0 and make sure temp 1 goes down
-	hot_diggity::chk_t_fall(0, 1, 15000);
-	// turn on heater 1 and make sure temp 0 goes up
-	hot_diggity::chk_t_rise(1, 0, 6000);
-	// turn off heater 1 and make sure temp 0 goes down
-	hot_diggity::chk_t_fall(1, 0, 15000);
-	hds.println("Corner Board Test Complete.");
-}
-
 /// @brief will test the heaters with corresponding temp sensors on flex board
 ///			does not test the temp sensors that aren't near the heaters
 void hot_diggity::fbTest(){
@@ -553,7 +515,7 @@ void hot_diggity:: chk_t_rise(uint8_t htr, uint8_t tsen, unsigned long t_run){
 	unsigned long t_cur = t_start;
 	// turn on heater and make sure temp goes up
 	hds.println("check t:" + String(tsen) + " h: " + String(htr) + " --> heating (" + String(tval_fl) + " secs max)....");
-	hot_diggity::setHeaterPower((pwm_info::pwm_sel)htr, 200);
+	hot_diggity::setHeaterPower((pwm_info::pwm_sel)htr, 1000);
 	// check temp in loop (two thresholds 1 for faster than max time, other at max time)
 	while(hit_target == false){
 		t_temp = hot_diggity::getTemperature((tsense_info::tsense)tsen);
