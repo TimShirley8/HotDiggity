@@ -1,8 +1,14 @@
-// (c) Meta Platforms, Inc. and affiliates. Confidential and proprietary.
-// Author: Tim Shirley
+/***************************************************************************//**
+ *  @file
+ *
+ *  module for i2c port expander PCAL6408A
+ *
+ *  @copyright 2022-present Meta Platforms, Inc. and affiliates.
+ *              Confidential and proprietary.
+ *//***************************************************************************/
 
-#ifndef PCAL6408A_h
-#define PCAL6408A_h
+#ifndef Pcal6408a_H_
+#define Pcal6408a_H_
 #include <Arduino.h>
 #include "Wire.h"
 
@@ -41,10 +47,10 @@ namespace pcal_drv_str{
   const uint8_t shft7 = 6;
 };
 
-class PCAL6408A{
+class Pcal6408a{
 public:
-  PCAL6408A();
-  PCAL6408A(uint8_t addr, TwoWire &i2c);
+  Pcal6408a();
+  Pcal6408a(uint8_t addr, TwoWire &i2c);
   bool begin(void);
   void connect(uint8_t addr, TwoWire &i2c);
   void writeExPort(uint8_t val);
@@ -53,10 +59,11 @@ public:
     uint8_t pupd_sel, uint8_t outp_cfg);
 
 private:
-  uint8_t _i2c_addr;
-  TwoWire *_i2c;
+  uint8_t I2cAddr_;
+  TwoWire *I2c_;
 
-  uint8_t i2c_read8(uint8_t reg);
-  void i2c_write8(uint8_t reg, uint8_t value);
+  uint8_t i2cRead8(uint8_t reg);
+  void i2cWrite8(uint8_t reg, uint8_t value);
 };
-#endif
+
+#endif /* Pcal6408a_H_ */

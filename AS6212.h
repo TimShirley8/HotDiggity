@@ -23,11 +23,11 @@
 
 #include <Wire.h>
 #include <Arduino.h>
-#include "AS6212_Registers.h"
+#include "As6212Registers.h"
 
-class AS6212{
+class As6212{
   public:
-    AS6212();
+    As6212();
     bool begin(uint8_t sensorAddress = 0x48, TwoWire &wirePort = Wire);
     uint8_t getAddress();
     float readTempC();
