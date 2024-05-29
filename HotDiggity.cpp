@@ -14,10 +14,6 @@
 /// @brief creates an instance of hot_diggity
 hot_diggity::hot_diggity(){
 }
-int i2c_read_status = 0;
-int i2c_write_status = 0;
-int* ptr_read_status = &i2c_read_status; //TODO add these to the read and write functions here
-int* ptr_write_status = &i2c_write_status;
 
 /// @brief initializes/begins the port expander, the pwm chip, and the temp
 ///			sensors for the hot diggity system.  Also gets the board information
@@ -437,26 +433,26 @@ void hot_diggity::fbTest(){
     13 const uint8_t flexi14_adr = 0x4A; // 0x4A Temp Sense FB14
     const uint8_t ctrl1_adr   = 0x4B; // 0x4B Temp Sense CB1
     */
-	hot_diggity::chk_t_rise(0, 1, 3000);
-	hot_diggity::chk_t_fall(0, 1, 5000);
-	hot_diggity::chk_t_rise(1, 0, 3000);
-	hot_diggity::chk_t_fall(1, 0, 5000);
-	hot_diggity::chk_t_rise(2, 3, 3000);
-	hot_diggity::chk_t_fall(2, 3, 5000);
-	hot_diggity::chk_t_rise(3, 9, 3000);
-	hot_diggity::chk_t_fall(3, 9, 5000);
-	hot_diggity::chk_t_rise(4, 10, 3000);
-	hot_diggity::chk_t_fall(4, 10, 5000);
-	hot_diggity::chk_t_rise(5, 6, 3000);
-	hot_diggity::chk_t_fall(5, 6, 5000);
-	hot_diggity::chk_t_rise(6, 2, 3000);
-	hot_diggity::chk_t_fall(6, 2, 5000);
-	hot_diggity::chk_t_rise(7, 10, 3000);
-	hot_diggity::chk_t_fall(7, 10, 5000);
-	hot_diggity::chk_t_rise(8, 9, 3000);
-	hot_diggity::chk_t_fall(8, 9, 5000);
-	hot_diggity::chk_t_rise(9, 10, 3000);
-	hot_diggity::chk_t_fall(9, 10, 5000);
+	hot_diggity::chk_t_rise(pwm_info::pwm_flex0, tsense_info::flexi2, 3000);
+	hot_diggity::chk_t_fall(pwm_info::pwm_flex0, tsense_info::flexi2, 5000);
+	hot_diggity::chk_t_rise(pwm_info::pwm_flex1, tsense_info::flexi1, 3000);
+	hot_diggity::chk_t_fall(pwm_info::pwm_flex1, tsense_info::flexi1, 5000);
+	hot_diggity::chk_t_rise(pwm_info::pwm_flex2, tsense_info::flexi4, 3000);
+	hot_diggity::chk_t_fall(pwm_info::pwm_flex2, tsense_info::flexi4, 5000);
+	hot_diggity::chk_t_rise(pwm_info::pwm_flex3, tsense_info::flexi10, 3000);
+	hot_diggity::chk_t_fall(pwm_info::pwm_flex3, tsense_info::flexi10, 5000);
+	hot_diggity::chk_t_rise(pwm_info::pwm_flex4, tsense_info::flexi11, 3000);
+	hot_diggity::chk_t_fall(pwm_info::pwm_flex4, tsense_info::flexi11, 5000);
+	hot_diggity::chk_t_rise(pwm_info::pwm_flex5, tsense_info::flexi7, 3000);
+	hot_diggity::chk_t_fall(pwm_info::pwm_flex5, tsense_info::flexi7, 5000);
+	hot_diggity::chk_t_rise(pwm_info::pwm_flex6, tsense_info::flexi3, 3000);
+	hot_diggity::chk_t_fall(pwm_info::pwm_flex6, tsense_info::flexi3, 5000);
+	hot_diggity::chk_t_rise(pwm_info::pwm_flex7, tsense_info::flexi8, 3000);
+	hot_diggity::chk_t_fall(pwm_info::pwm_flex7, tsense_info::flexi8, 5000);
+	hot_diggity::chk_t_rise(pwm_info::pwm_flex8, tsense_info::flexi9, 3000);
+	hot_diggity::chk_t_fall(pwm_info::pwm_flex8, tsense_info::flexi9, 5000);
+	hot_diggity::chk_t_rise(pwm_info::pwm_flex9, tsense_info::flexi5, 3000);
+	hot_diggity::chk_t_fall(pwm_info::pwm_flex9, tsense_info::flexi5, 5000);
 	hds.println("Flex Board Test Complete.");
 }
 

@@ -58,13 +58,11 @@ namespace tsense_info{
 		flexi10,
 		flexi11,
 		flexi12,
-    flexi13,
-    flexi14,
-		ctrl1
+		flexi13,
+		flexi14,
+		ctrl1,
+		num_tsense
 	};
-
-
-
 
 	const uint8_t flexi1_adr  = 0x44; // 0x44 Temp Sense FB1
 	const uint8_t flexi2_adr  = 0x45; // 0x45 Temp Sense FB2
@@ -78,13 +76,27 @@ namespace tsense_info{
 	const uint8_t flexi10_adr = 0x46; // 0x46 Temp Sense FB10
 	const uint8_t flexi11_adr = 0x47; // 0x47 Temp Sense FB11
 	const uint8_t flexi12_adr = 0x48; // 0x48 Temp Sense FB12
-  const uint8_t flexi13_adr = 0x49; // 0x49 Temp Sense FB13
-  const uint8_t flexi14_adr = 0x4A; // 0x4A Temp Sense FB14
+	const uint8_t flexi13_adr = 0x49; // 0x49 Temp Sense FB13
+	const uint8_t flexi14_adr = 0x4A; // 0x4A Temp Sense FB14
 	const uint8_t ctrl1_adr   = 0x4B; // 0x4B Temp Sense CB1
 
-	const uint8_t tsense_adr[] = {flexi1_adr, flexi2_adr, flexi3_adr, flexi4_adr,
-  flexi5_adr, flexi6_adr, flexi7_adr, flexi8_adr, flexi9_adr, flexi10_adr,
-   flexi11_adr, flexi12_adr, flexi13_adr, flexi14_adr, ctrl1_adr};
+	const uint8_t tsense_adr[] = {
+		flexi1_adr,
+		flexi2_adr,
+		flexi3_adr,
+		flexi4_adr,
+  		flexi5_adr,
+		flexi6_adr,
+		flexi7_adr,
+		flexi8_adr,
+		flexi9_adr,
+		flexi10_adr,
+   		flexi11_adr,
+		flexi12_adr,
+		flexi13_adr,
+		flexi14_adr,
+		ctrl1_adr
+	};
 }
 
 // ------------------- Other Component Addresses --------------
@@ -104,13 +116,13 @@ namespace in_mach{
 
 /*
  * Ideally this class will represent the higher level aggregated hardware:
- *    - 13 AS6212 temp sensors
+ *    - 15 AS6212 temp sensors
  *    -  1 I/O port expander (PCAL6408A)
  *         - enable PWM controller output
  *         - read board id, revision
  *         - enable 3V3 LED
  *    -  1 PWM controller (PCA9685)
- *         - 9 heaters pwm settings of 0-4095 (0 to 1024mW in 250uW steps)
+ *         - 10 heaters pwm settings of 0-4095 (0 to 1024mW in 250uW steps)
  *         - 1 RGB LED (on V_HTR)
  *         - 1 Green LED (relative to 3V3)
  */
@@ -147,7 +159,7 @@ void rbTest(void);
 	String getCommand(void);
 
 private:
-	As6212 _temp_sense[13];
+	As6212 _temp_sense[tsense_info::num_tsense];
 	PwmDriver _pwm;			// PCA9685
 	Pcal6408a _p_exp;
 	uint8_t	_board_id;
@@ -156,8 +168,8 @@ private:
 	uint16_t _poll_rate;
 	bool _poll_active;
 	ulong _last_poll_time;
-	float _t_sense_data[tsense_info::ctrl1 + 1];
-	ulong _t_sense_time[tsense_info::ctrl1 + 1];
+	float _t_sense_data[tsense_info::num_tsense];
+	ulong _t_sense_time[tsense_info::num_tsense];
 	String _cmd_str;
 	in_mach::inm_states _input_machine_state;
 	void chk_t_rise(uint8_t htr, uint8_t tsen, unsigned long t_run);
