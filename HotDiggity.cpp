@@ -323,6 +323,7 @@ void hot_diggity::checkPoll(){
 			for(int i = tsense_info::flexi1; i <= tsense_info::ctrl1; i++){
 				_t_sense_data[i] = getTemperature((tsense_info::tsense)i, &_t_sense_time[i]);
 				msg += String(_t_sense_data[i]) + ", " + String(_t_sense_time[i]);
+				// msg += "fl-" + String(i+1) + ": " + String(_t_sense_data[i]);
 				if(i < tsense_info::ctrl1) { msg += ", "; }
 			}
 			// print results
@@ -516,7 +517,7 @@ void hot_diggity:: chk_t_rise(uint8_t htr, uint8_t tsen, unsigned long t_run){
 	unsigned long t_cur = t_start;
 	// turn on heater and make sure temp goes up
 	hds.println("check t:" + String(tsen) + " h: " + String(htr) + " --> heating (" + String(tval_fl) + " secs max)....");
-	hot_diggity::setHeaterPower((pwm_info::pwm_sel)htr, 1000);
+	hot_diggity::setHeaterPower((pwm_info::pwm_sel)htr, 500);
 	// check temp in loop (two thresholds 1 for faster than max time, other at max time)
 	while(hit_target == false){
 		t_temp = hot_diggity::getTemperature((tsense_info::tsense)tsen);
