@@ -186,7 +186,7 @@ void hot_diggity::setHeaterPower(pwm_info::pwm_sel htr_num, uint16_t power_mw){
 		// else set the heater
 			_htr_pwr[htr_num] = power_mw;
 			uint16_t set_to = power_mw * 4;	// power goes in 250uW steps
-			_pwm.setPwmOut(htr_num, set_to, false);
+			_pwm.setPwmOutOffset(htr_num, set_to, false);
 		}
 	} else {
 		// display an error
@@ -259,9 +259,9 @@ String hot_diggity::getBoardInfo(){
 /// @param blu 8-bit blue level
 void hot_diggity::setRgbValue(uint8_t red, uint8_t grn, uint8_t blu){
 	// take the 8 bit vals, and write them as 12 bit values
-	_pwm.setPwmOut(pwm_info::pwm_red, ((uint16_t)red) << 4, false);
-	_pwm.setPwmOut(pwm_info::pwm_grn, ((uint16_t)grn) << 4, false);
-	_pwm.setPwmOut(pwm_info::pwm_blu, ((uint16_t)blu) << 4, false);
+	_pwm.setPwmOutOffset(pwm_info::pwm_red, ((uint16_t)red) << 4, false);
+	_pwm.setPwmOutOffset(pwm_info::pwm_grn, ((uint16_t)grn) << 4, false);
+	_pwm.setPwmOutOffset(pwm_info::pwm_blu, ((uint16_t)blu) << 4, false);
 }
 #pragma endregion
 

@@ -94,6 +94,7 @@ public:
   uint16_t getPwm(uint8_t pwm_num);
   void setPwm(uint8_t pwm_num, uint16_t tc_on, uint16_t tc_off);
   void setPwmOut(uint8_t num, uint16_t pin_val, bool invert = false);
+	void setPwmOutOffset(uint8_t num, uint16_t pin_val, bool invert = false);
 
 private:
   uint8_t   PrescaleVal_;

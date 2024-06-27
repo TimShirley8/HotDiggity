@@ -170,8 +170,8 @@ uint16_t PwmDriver::getPwm(uint8_t pwm_num){
 
 /// @brief sets the PWM registers for active "on" and inactive "off" time
 /// @param pwm_num the pwm number to set
-/// @param tc_on the clock count that the pwm turns on
-/// @param tc_off the clock count that the pwm turns off
+/// @param tc_on the clock count that the pwm turns on (a value of 4096 will force output high)
+/// @param tc_off the clock count that the pwm turns off (a value of 4096 will force output low - dominant over forced high)
 void PwmDriver::setPwm(uint8_t pwm_num, uint16_t tc_on, uint16_t tc_off){
   I2c_->beginTransmission(I2cAddr_);
   uint8_t start_reg = pwm_reg::on_lsb + (pwm_reg::kNextRegInc * pwm_num);
@@ -195,7 +195,7 @@ void PwmDriver::setPwmOut(uint8_t num, uint16_t pin_val, bool invert){
     } else if (4095 == pin_val){
       setPwm(num, 0, 4096);
     } else {
-      uint16_t off_val = 4095 - pin_val;
+      uint16_t off_val = 4096 - pin_val;
       setPwm(num, 0, off_val);
     }
   } else {
@@ -208,6 +208,35 @@ void PwmDriver::setPwmOut(uint8_t num, uint16_t pin_val, bool invert){
     }
   }
 }
+
+/// @brief sets the PWM output for a pin with offset based on channel (active time)
+/// @param num the pwm number to set
+/// @param pin_val active time
+/// @param invert false: active high, true: active low
+void PwmDriver::setPwmOutOffset(uint8_t num, uint16_t pin_val, bool invert){
+  pin_val = min(pin_val, (uint16_t)4095);
+  uint16_t offset = num * 128; // offset each channel by 128
+  if(invert){
+    if(0 == pin_val){
+      setPwm(num, 4096, 0);
+    } else if (4095 == pin_val){
+      setPwm(num, 0, 4096);
+    } else {
+      uint16_t off_val = (4096 - pin_val + offset) % 4096;
+      setPwm(num, offset, off_val);
+    }
+  } else {
+    if(4095 == pin_val){
+      setPwm(num, 4096, 0);
+    } else if (0 == pin_val){
+      setPwm(num, 0, 4096);
+    } else {
+      uint16_t off_val = (pin_val + offset) % 4096;
+      setPwm(num, offset, off_val);
+    }
+  }
+}
+
 
 /// @brief helper function to get 1 byte from the i2c register
 /// @param reg register that we want to read from
